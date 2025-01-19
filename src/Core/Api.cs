@@ -64,11 +64,17 @@ namespace Zenith
 			public bool IsGagged
 				=> _player.IsGagged;
 
+			public bool IsAFK
+				=> _player.IsAFK;
+
 			public void SetMute(bool value, ActionPriority priority = ActionPriority.Low)
 				=> _player.SetMute(value, priority);
 
 			public void SetGag(bool value, ActionPriority priority = ActionPriority.Low)
 				=> _player.SetGag(value, priority);
+
+			public void SetAFK(bool value, ActionPriority priority = ActionPriority.Low)
+				=> _player.SetAFK(value, priority);
 
 			public void Print(string message)
 				=> _player.Print(message);

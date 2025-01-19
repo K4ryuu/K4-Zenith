@@ -37,6 +37,7 @@ public sealed partial class Player
 	private Tuple<string, ActionPriority>? _chatColor = null;
 	public Tuple<bool, ActionPriority>? _mute = null;
 	public Tuple<bool, ActionPriority>? _gag = null;
+	public Tuple<bool, ActionPriority>? _afk = null;
 	public (string ShortName, string LongName) _country = ("??", "Unknown");
 
 	// +--------------------+
@@ -85,6 +86,9 @@ public sealed partial class Player
 
 	public bool IsGagged
 		=> _gag?.Item1 ?? false;
+
+	public bool IsAFK
+		=> _afk?.Item1 ?? false;
 
 	// +--------------------+
 	// | PLAYER FUNCTIONS   |
@@ -182,6 +186,17 @@ public sealed partial class Player
 			_gag = null;
 
 		_gag = new Tuple<bool, ActionPriority>(gag, priority);
+	}
+
+	public void SetAFK(bool afk, ActionPriority priority)
+	{
+		if (priority < _afk?.Item2)
+			return;
+
+		if (!afk)
+			_afk = null;
+
+		_afk = new Tuple<bool, ActionPriority>(afk, priority);
 	}
 
 	public void SetClanTag(string? tag, ActionPriority priority)

@@ -50,6 +50,11 @@ namespace ZenithAPI
 		bool IsGagged { get; }
 
 		/// <summary>
+		/// Checks if the player is afk.
+		/// </summary>
+		bool IsAFK { get; }
+
+		/// <summary>
 		/// Sets the player's mute status.
 		/// </summary>
 		void SetMute(bool mute, ActionPriority priority = ActionPriority.Low);
@@ -58,6 +63,11 @@ namespace ZenithAPI
 		/// Sets the player's gag status.
 		/// </summary>
 		void SetGag(bool gag, ActionPriority priority = ActionPriority.Low);
+
+		/// <summary>
+		/// Sets the player's afk status.
+		/// </summary>
+		void SetAFK(bool afk, ActionPriority priority = ActionPriority.Low);
 
 		/// <summary>
 		/// Prints a message to the player's chat.
