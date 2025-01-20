@@ -5,22 +5,9 @@ using CounterStrikeSharp.API.Core.Capabilities;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Utils;
 using ZenithAPI;
-using Menu;
-using Menu.Enums;
-using MySqlConnector;
-using Dapper;
-using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.Extensions.Logging;
-using CounterStrikeSharp.API.Modules.Menu;
-using System.Reflection;
-using CounterStrikeSharp.API;
-using CounterStrikeSharp.API.Core;
-using CounterStrikeSharp.API.Core.Attributes.Registration;
 using CounterStrikeSharp.API.Modules.Admin;
-using CounterStrikeSharp.API.Core.Capabilities;
-using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Timers;
-using CounterStrikeSharp.API.Modules.Utils;
 namespace Zenith_AFKManager;
 
 [MinimumApiVersion(260)]
@@ -28,19 +15,17 @@ public class Plugin : BasePlugin
 {
 	public CCSGameRules? GameRules = null;
 	public IModuleConfigAccessor _coreAccessor = null!;
-	private const string MODULE_ID = "AFK Manager";
+	private const string MODULE_ID = "AFKManager";
 
 	public override string ModuleName => $"Kewaii-Zenith | {MODULE_ID}";
 	public override string ModuleAuthor => "Kewaii";
-	public override string ModuleVersion => "1.0.";
+	public override string ModuleVersion => "1.0.0";
 
 	private PlayerCapability<IPlayerServices>? _playerServicesCapability;
 	private PluginCapability<IModuleServices>? _moduleServicesCapability;
 
 	private IZenithEvents? _zenithEvents;
 	private IModuleServices? _moduleServices;
-	private readonly HashSet<CCSPlayerController> playerSpawned = [];
-
     private CCSGameRules? _gGameRulesProxy;
     public Dictionary<uint, PlayerInfo> _gPlayerInfo = new();
 

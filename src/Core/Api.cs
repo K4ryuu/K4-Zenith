@@ -190,7 +190,7 @@ namespace Zenith
 
 			public bool IsModuleEnabled(string module) {				
 				string pluginDirectory = Path.GetDirectoryName(_plugin.ModuleDirectory)!;
-				return Directory.GetDirectories(pluginDirectory, module).Any();
+				return Directory.GetDirectories(pluginDirectory, module).Length > 0;
 			}
 
 			internal void InvokeZenithPlayerLoaded(CCSPlayerController player)

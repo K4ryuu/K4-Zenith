@@ -199,7 +199,7 @@ public class Plugin : BasePlugin
 			UpdatePlaytime(player);
 
 			bool hasPlaytime = player.Zenith.GetStorage<double>("TotalPlaytime") > 1 ||
-								player.Zenith.GetStorage<double>("NonAFKPlaytime", "AFK Manager") > 1 ||
+								player.Zenith.GetStorage<double>("NonAFKPlaytime", "Kewaii-Zenith-AFKManager") > 1 ||
 								player.Zenith.GetStorage<double>("TerroristPlaytime") > 1 ||
 								player.Zenith.GetStorage<double>("CounterTerroristPlaytime") > 1 ||
 								player.Zenith.GetStorage<double>("SpectatorPlaytime") > 1 ||
@@ -250,13 +250,13 @@ public class Plugin : BasePlugin
 		data.Zenith.SetStorage(lifeStatusKey, lifeStatusPlaytime);
 		if (data.ModuleServices.IsModuleEnabled("Kewaii-Zenith-AFKManager")) {
 			if (data.Zenith.IsAFK) {
-				double afkPlaytime = data.Zenith.GetStorage<double>("AFKPlaytime", "AFK Manager");
+				double afkPlaytime = data.Zenith.GetStorage<double>("AFKPlaytime", "Kewaii-Zenith-AFKManager");
 				afkPlaytime += sessionDurationMinutes;
-				data.Zenith.SetStorage("AFKPlaytime", afkPlaytime, false, "AFK Manager");
+				data.Zenith.SetStorage("AFKPlaytime", afkPlaytime, false, "Kewaii-Zenith-AFKManager");
 			} else {
-				double nonAFKPlaytime = data.Zenith.GetStorage<double>("NonAFKPlaytime", "AFK Manager");
+				double nonAFKPlaytime = data.Zenith.GetStorage<double>("NonAFKPlaytime", "Kewaii-Zenith-AFKManager");
 				nonAFKPlaytime += sessionDurationMinutes;
-				data.Zenith.SetStorage("NonAFKPlaytime", nonAFKPlaytime, false, "AFK Manager");
+				data.Zenith.SetStorage("NonAFKPlaytime", nonAFKPlaytime, false, "Kewaii-Zenith-AFKManager");
 			}
 		}
 
@@ -333,8 +333,8 @@ public class Plugin : BasePlugin
 	{
 		double totalPlaytime = playerServices.GetStorage<double>("TotalPlaytime");
 		
-		double nonAFKPlaytime = playerServices.GetStorage<double>("NonAFKPlaytime", "AFK Manager");
-		double AFKPlaytime = playerServices.GetStorage<double>("AFKPlaytime", "AFK Manager");
+		double nonAFKPlaytime = playerServices.GetStorage<double>("NonAFKPlaytime", "Kewaii-Zenith-AFKManager");
+		double AFKPlaytime = playerServices.GetStorage<double>("AFKPlaytime", "Kewaii-Zenith-AFKManager");
 		double terroristPlaytime = playerServices.GetStorage<double>("TerroristPlaytime");
 		double ctPlaytime = playerServices.GetStorage<double>("CounterTerroristPlaytime");
 		double spectatorPlaytime = playerServices.GetStorage<double>("SpectatorPlaytime");
@@ -358,6 +358,10 @@ public class Plugin : BasePlugin
 			playerServices.Print(Localizer["timestats.chat.total", FormatTime(totalPlaytime)]);
 			playerServices.Print(Localizer["timestats.chat.teams", FormatTime(terroristPlaytime), FormatTime(ctPlaytime)]);
 			playerServices.Print(Localizer["timestats.chat.spectator", FormatTime(spectatorPlaytime)]);
+			if (_moduleServices is not null && _moduleServices.IsModuleEnabled("Kewaii-Zenith-AFKManager")) {
+				playerServices.Print(Localizer["timestats.chat.afk", FormatTime(AFKPlaytime)]);
+				playerServices.Print(Localizer["timestats.chat.nonafk", FormatTime(nonAFKPlaytime)]);
+			}
 			playerServices.Print(Localizer["timestats.chat.status", FormatTime(alivePlaytime), FormatTime(deadPlaytime)]);
 		}
 	}

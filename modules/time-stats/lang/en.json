@@ -15,6 +15,8 @@
   "timestats.chat.total": "--- {silver}Total Playtime: {lime}{0}",
   "timestats.chat.teams": "--- {silver}Team Playtime: {red}T: {0}{silver}, {blue}CT: {1}",
   "timestats.chat.spectator": "--- {silver}Spectator Time: {grey}{0}",
+  "timestats.chat.afk": "--- {silver}AFK time: {grey}{0}",
+  "timestats.chat.nonafk": "--- {silver}Non AFK time: {grey}{0}",
   "timestats.chat.status": "--- {silver}Status: {green}Alive: {0}{silver}, {darkred}Dead: {1}",
 
   "timestats.today.title": "+ Today's Playtime +",
