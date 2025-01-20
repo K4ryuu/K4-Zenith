@@ -27,7 +27,7 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ZenithAPI">
-      <HintPath>$(ProjectDir)\..\src-api\bin\K4-ZenithAPI\K4-ZenithAPI.dll</HintPath>
+      <HintPath>/Users/sples/Projects/CS2_Random/Menu-main/src/bin/Release/net8.0/publish/KitsuneMenu.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
@@ -47,7 +47,7 @@
     <None Update="$(ProjectDir)\lang\**\*.*" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
   <Target Name="CopySharedApiToOutput" AfterTargets="Build">
-    <Copy SourceFiles="$(ProjectDir)\..\external-dlls/KitsuneMenu.dll" DestinationFolder="$(ProjectDir)/bin/K4-Zenith/shared/KitsuneMenu/" OverwriteReadOnlyFiles="true" SkipUnchangedFiles="false" />
+    <Copy SourceFiles="/Users/sples/Projects/CS2_Random/Menu-main/src/bin/Release/net8.0/publish/KitsuneMenu.dll" DestinationFolder="$(ProjectDir)/bin/K4-Zenith/shared/KitsuneMenu/" OverwriteReadOnlyFiles="true" SkipUnchangedFiles="false" />
     <Copy SourceFiles="$(ProjectDir)\..\src-api\bin\K4-ZenithAPI\K4-ZenithAPI.dll" DestinationFolder="$(ProjectDir)/bin/K4-Zenith/shared/K4-ZenithAPI/" OverwriteReadOnlyFiles="true" SkipUnchangedFiles="false" />
   </Target>
 </Project>
