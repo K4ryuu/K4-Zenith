@@ -7,6 +7,7 @@ using MySqlConnector;
 using Menu;
 using Menu.Enums;
 using Microsoft.Extensions.Logging;
+using CounterStrikeSharp.API.Core.Translations;
 
 namespace Zenith_TopLists;
 
@@ -73,7 +74,7 @@ public class StatsTopHandler
 			}
 			else
 			{
-				_plugin.ModuleServices?.PrintForPlayer(player, _plugin.Localizer["statstop.invalid.count", TopListsPlugin.DEFAULT_PLAYER_COUNT]);
+				_plugin.ModuleServices?.PrintForPlayer(player, _plugin.Localizer.ForPlayer(player, "statstop.invalid.count", TopListsPlugin.DEFAULT_PLAYER_COUNT));
 			}
 		}
 
@@ -96,10 +97,10 @@ public class StatsTopHandler
 	{
 		var items = Enum.GetValues(typeof(StatsCategory))
 			.Cast<StatsCategory>()
-			.Select(category => new MenuItem(MenuItemType.Button, [new MenuValue(_plugin.Localizer[$"statstop.category.{category}"])]))
+			.Select(category => new MenuItem(MenuItemType.Button, [new MenuValue(_plugin.Localizer.ForPlayer(player, $"statstop.category.{category}"))]))
 			.ToList();
 
-		_plugin.menu?.ShowScrollableMenu(player, _plugin.Localizer["statstop.category.menu.title"], items, (buttons, menu, selected) =>
+		_plugin.menu?.ShowScrollableMenu(player, _plugin.Localizer.ForPlayer(player, "statstop.category.menu.title"), items, (buttons, menu, selected) =>
 		{
 			if (selected == null) return;
 
@@ -117,11 +118,11 @@ public class StatsTopHandler
 
 	private void ShowChatStatsTopCategoryMenu(CCSPlayerController player, int playerCount)
 	{
-		var chatMenu = new ChatMenu(_plugin.Localizer["statstop.category.menu.title"]);
+		var chatMenu = new ChatMenu(_plugin.Localizer.ForPlayer(player, "statstop.category.menu.title"));
 
 		foreach (StatsCategory category in Enum.GetValues(typeof(StatsCategory)))
 		{
-			chatMenu.AddMenuOption(_plugin.Localizer[$"statstop.category.{category}"], (p, _) =>
+			chatMenu.AddMenuOption(_plugin.Localizer.ForPlayer(player, $"statstop.category.{category}"), (p, _) =>
 			{
 				ShowStatsTopMenu(p, category, playerCount);
 			});
@@ -140,7 +141,7 @@ public class StatsTopHandler
 			{
 				if (topPlayers.Count == 0)
 				{
-					_plugin.ModuleServices?.PrintForPlayer(player, _plugin.Localizer["statstop.no.data"]);
+					_plugin.ModuleServices?.PrintForPlayer(player, _plugin.Localizer.ForPlayer(player, "statstop.no.data"));
 					return;
 				}
 
@@ -165,19 +166,19 @@ public class StatsTopHandler
 
 	private void ShowCenterStatsTopMenu(CCSPlayerController player, List<(string Name, int Value)> topPlayers)
 	{
-		var items = topPlayers.Select((p, index) => new MenuItem(MenuItemType.Button, [new MenuValue(_plugin.Localizer["statstop.player.entry.center", index + 1, p.Name, p.Value])])).ToList();
+		var items = topPlayers.Select((p, index) => new MenuItem(MenuItemType.Button, [new MenuValue(_plugin.Localizer.ForPlayer(player, "statstop.player.entry.center", index + 1, p.Name, $"{p.Value:N0}"))])).ToList();
 
-		_plugin.menu?.ShowScrollableMenu(player, _plugin.Localizer["top.menu.title", topPlayers.Count], items, (_, _, _) => { }, true, _plugin.CoreAccessor!.GetValue<bool>("Core", "FreezeInMenu") && (_plugin.GetZenithPlayer(player)?.GetSetting<bool>("FreezeInMenu", "K4-Zenith") ?? true), 5, disableDeveloper: !_plugin.CoreAccessor!.GetValue<bool>("Core", "ShowDevelopers"));
+		_plugin.menu?.ShowScrollableMenu(player, _plugin.Localizer.ForPlayer(player, "top.menu.title", topPlayers.Count), items, (_, _, _) => { }, true, _plugin.CoreAccessor!.GetValue<bool>("Core", "FreezeInMenu") && (_plugin.GetZenithPlayer(player)?.GetSetting<bool>("FreezeInMenu", "K4-Zenith") ?? true), 5, disableDeveloper: !_plugin.CoreAccessor!.GetValue<bool>("Core", "ShowDevelopers"));
 	}
 
 	private void ShowChatStatsTopMenu(CCSPlayerController player, List<(string Name, int Value)> topPlayers)
 	{
-		var chatMenu = new ChatMenu(_plugin.Localizer["top.menu.title", topPlayers.Count]);
+		var chatMenu = new ChatMenu(_plugin.Localizer.ForPlayer(player, "top.menu.title", topPlayers.Count));
 
 		for (int i = 0; i < topPlayers.Count; i++)
 		{
 			var (Name, Value) = topPlayers[i];
-			chatMenu.AddMenuOption(_plugin.Localizer["statstop.player.entry.chat", i + 1, Name, Value], (_, _) => { });
+			chatMenu.AddMenuOption(_plugin.Localizer.ForPlayer(player, "statstop.player.entry.chat", i + 1, Name, $"{Value:N0}"), (_, _) => { });
 		}
 
 		MenuManager.OpenChatMenu(player, chatMenu);
@@ -200,10 +201,11 @@ public class StatsTopHandler
 
 			var columnName = "K4-Zenith-Stats.storage";
 			var query = $@"
-				SELECT name,
-					CAST(JSON_UNQUOTE(JSON_EXTRACT(@ColumnName, '$.{category}')) AS UNSIGNED) AS Value
-				FROM zenith_player_storage
-				WHERE @ColumnName IS NOT NULL
+				SELECT p.name,
+					CAST(JSON_EXTRACT(p.`{columnName}`, '$.{category}') AS UNSIGNED) as Value
+				FROM zenith_player_storage p
+				WHERE JSON_VALID(p.`{columnName}`) = 1
+				AND JSON_EXTRACT(p.`{columnName}`, '$.{category}') IS NOT NULL
 				ORDER BY Value DESC
 				LIMIT @Limit";
 

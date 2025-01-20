@@ -3,6 +3,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Core.Capabilities;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Timers;
 using CounterStrikeSharp.API.Modules.UserMessages;
@@ -20,7 +21,7 @@ public sealed partial class Plugin : BasePlugin
 
 	public override string ModuleName => $"K4-Zenith | {MODULE_ID}";
 	public override string ModuleAuthor => "K4ryuu @ KitsuneLab";
-	public override string ModuleVersion => "1.0.13";
+	public override string ModuleVersion => "1.0.14";
 
 	private PlayerCapability<IPlayerServices>? _playerServicesCapability;
 	private PluginCapability<IModuleServices>? _moduleServicesCapability;
@@ -187,7 +188,7 @@ public sealed partial class Plugin : BasePlugin
 		_defaultStorage = new Dictionary<string, object?>
 		{
 			{ "Points", _configAccessor.GetValue<long>("Settings", "StartPoints") },
-			{ "Rank", Localizer["k4.phrases.rank.none"] }
+			{ "Rank", "k4.phrases.rank.none" }
 		};
 
 		_moduleServices!.RegisterModuleStorage(_defaultStorage);
@@ -308,10 +309,10 @@ public sealed partial class Plugin : BasePlugin
 		if (_playerCache.TryGetValue(p, out var player))
 		{
 			var playerData = GetOrUpdatePlayerRankInfo(player);
-			return playerData.Rank?.Name ?? Localizer["k4.phrases.rank.none"];
+			return playerData.Rank?.Name ?? Localizer.ForPlayer(p, "k4.phrases.rank.none");
 		}
 
-		return Localizer["k4.phrases.rank.none"];
+		return Localizer.ForPlayer(p, "k4.phrases.rank.none");
 	}
 
 	private string GetPlayerPoints(CCSPlayerController p)

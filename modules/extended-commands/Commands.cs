@@ -1,12 +1,11 @@
 
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Cvars;
-using CounterStrikeSharp.API.Modules.Entities.Constants;
 using CounterStrikeSharp.API.Modules.Memory;
 using CounterStrikeSharp.API.Modules.Utils;
-using Microsoft.Extensions.Logging;
 
 namespace Zenith_ExtendedCommands;
 
@@ -19,7 +18,7 @@ public sealed partial class Plugin : BasePlugin
 			int health = 100;
 			if (info.ArgCount >= 3 && !int.TryParse(info.GetArg(2), out health))
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer["commands.error.invalid_health"]);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.error.invalid_health"));
 				return;
 			}
 
@@ -29,7 +28,7 @@ public sealed partial class Plugin : BasePlugin
 				{
 					target.PlayerPawn.Value.Health = health;
 					Utilities.SetStateChanged(target.PlayerPawn.Value, "CBaseEntity", "m_iHealth");
-					ShowActivityToPlayers(player?.SteamID, "commands.hp.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName, health);
+					ShowActivityToPlayers(player?.SteamID, "commands.hp.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName, health);
 				}
 			}, true);
 		}, CommandUsage.CLIENT_AND_SERVER, 2, "<target> <health>", "@zenith-commands/health");
@@ -39,7 +38,7 @@ public sealed partial class Plugin : BasePlugin
 			int armor = 100;
 			if (info.ArgCount >= 3 && !int.TryParse(info.GetArg(2), out armor))
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer["commands.error.invalid_armor"]);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.error.invalid_armor"));
 				return;
 			}
 
@@ -49,7 +48,7 @@ public sealed partial class Plugin : BasePlugin
 				{
 					target.PlayerPawn.Value.ArmorValue = armor;
 					Utilities.SetStateChanged(target.PlayerPawn.Value, "CCSPlayerPawn", "m_ArmorValue");
-					ShowActivityToPlayers(player?.SteamID, "commands.armor.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName, armor);
+					ShowActivityToPlayers(player?.SteamID, "commands.armor.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName, armor);
 				}
 			}, true);
 		}, CommandUsage.CLIENT_AND_SERVER, 1, "<target> <armor>", "@zenith-commands/armor");
@@ -62,7 +61,7 @@ public sealed partial class Plugin : BasePlugin
 				{
 					Schema.GetRef<MoveType_t>(target.PlayerPawn.Value.Handle, "CBaseEntity", "m_nActualMoveType") = MoveType_t.MOVETYPE_OBSOLETE;
 					Utilities.SetStateChanged(target.PlayerPawn.Value, "CBaseEntity", "m_MoveType");
-					ShowActivityToPlayers(player?.SteamID, "commands.freeze.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName);
+					ShowActivityToPlayers(player?.SteamID, "commands.freeze.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName);
 				}
 			}, true);
 		}, CommandUsage.CLIENT_AND_SERVER, 1, "<target>", "@zenith-commands/freeze");
@@ -75,7 +74,7 @@ public sealed partial class Plugin : BasePlugin
 				{
 					Schema.GetRef<MoveType_t>(target.PlayerPawn.Value.Handle, "CBaseEntity", "m_nActualMoveType") = MoveType_t.MOVETYPE_WALK;
 					Utilities.SetStateChanged(target.PlayerPawn.Value, "CBaseEntity", "m_MoveType");
-					ShowActivityToPlayers(player?.SteamID, "commands.unfreeze.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName);
+					ShowActivityToPlayers(player?.SteamID, "commands.unfreeze.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName);
 				}
 			}, true);
 		}, CommandUsage.CLIENT_AND_SERVER, 1, "<target>", "@zenith-commands/freeze");
@@ -94,7 +93,7 @@ public sealed partial class Plugin : BasePlugin
 
 					Utilities.SetStateChanged(target.PlayerPawn.Value, "CBaseEntity", "m_MoveType");
 
-					ShowActivityToPlayers(player?.SteamID, actualMoveType == MoveType_t.MOVETYPE_NOCLIP ? "commands.noclip.enable" : "commands.noclip.disable", player?.PlayerName ?? Localizer["k4.general.console"]);
+					ShowActivityToPlayers(player?.SteamID, actualMoveType == MoveType_t.MOVETYPE_NOCLIP ? "commands.noclip.enable" : "commands.noclip.disable", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"));
 				}
 			}, true);
 		}, CommandUsage.CLIENT_ONLY, permission: "@zenith-commands/noclip");
@@ -104,7 +103,7 @@ public sealed partial class Plugin : BasePlugin
 			ProcessTargetAction(player, info.GetArgTargetResult(1), target =>
 			{
 				target?.PlayerPawn.Value?.CommitSuicide(false, false);
-				ShowActivityToPlayers(player?.SteamID, "commands.slay.success", player?.PlayerName ?? Localizer["k4.general.console"], target!.PlayerName);
+				ShowActivityToPlayers(player?.SteamID, "commands.slay.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target!.PlayerName);
 			}, true);
 		}, CommandUsage.CLIENT_AND_SERVER, 1, "<target>", "@zenith-commands/kill");
 
@@ -117,7 +116,7 @@ public sealed partial class Plugin : BasePlugin
 					string newName = info.GetArg(2);
 					target.PlayerName = newName;
 					Utilities.SetStateChanged(target, "CBasePlayerController", "m_iszPlayerName");
-					ShowActivityToPlayers(player?.SteamID, "commands.rename.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName, newName);
+					ShowActivityToPlayers(player?.SteamID, "commands.rename.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName, newName);
 				}
 			});
 		}, CommandUsage.CLIENT_AND_SERVER, 2, "<target> <name>", "@zenith-commands/rename");
@@ -127,7 +126,7 @@ public sealed partial class Plugin : BasePlugin
 			ProcessTargetAction(player, info.GetArgTargetResult(1), target =>
 			{
 				target?.Respawn();
-				ShowActivityToPlayers(player?.SteamID, "commands.respawn.success", player?.PlayerName ?? Localizer["k4.general.console"], target!.PlayerName);
+				ShowActivityToPlayers(player?.SteamID, "commands.respawn.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target!.PlayerName);
 			}, false);
 		}, CommandUsage.CLIENT_AND_SERVER, 1, "<target>", "@zenith-commands/respawn");
 
@@ -136,7 +135,7 @@ public sealed partial class Plugin : BasePlugin
 			ProcessTargetAction(player, info.GetArgTargetResult(1), target =>
 			{
 				target?.RemoveWeapons();
-				ShowActivityToPlayers(player?.SteamID, "commands.strip.success", player?.PlayerName ?? Localizer["k4.general.console"], target!.PlayerName);
+				ShowActivityToPlayers(player?.SteamID, "commands.strip.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target!.PlayerName);
 			}, true);
 		}, CommandUsage.CLIENT_AND_SERVER, 1, "<target>", "@zenith-commands/strip");
 
@@ -144,7 +143,7 @@ public sealed partial class Plugin : BasePlugin
 		{
 			if (!float.TryParse(info.GetArg(2), out float x) || !float.TryParse(info.GetArg(3), out float y) || !float.TryParse(info.GetArg(4), out float z))
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer["commands.error.invalid_coordinates"]);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.error.invalid_coordinates"));
 				return;
 			}
 
@@ -153,7 +152,7 @@ public sealed partial class Plugin : BasePlugin
 				if (target.PlayerPawn.Value != null)
 				{
 					target.PlayerPawn.Value.Teleport(new Vector(x, y, z));
-					ShowActivityToPlayers(player?.SteamID, "commands.tppos.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName, x, y, z);
+					ShowActivityToPlayers(player?.SteamID, "commands.tppos.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName, x, y, z);
 				}
 			}, true);
 		}, CommandUsage.CLIENT_AND_SERVER, 4, "<target> <x> <y> <z>", "@zenith-commands/teleport");
@@ -167,7 +166,7 @@ public sealed partial class Plugin : BasePlugin
 					if (target.PlayerPawn.Value != null && destination.PlayerPawn.Value != null)
 					{
 						target.PlayerPawn.Value.Teleport(destination.PlayerPawn.Value.AbsOrigin);
-						ShowActivityToPlayers(player?.SteamID, "commands.tp.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName, destination.PlayerName);
+						ShowActivityToPlayers(player?.SteamID, "commands.tp.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName, destination.PlayerName);
 					}
 				}, true);
 			}, true);
@@ -177,7 +176,7 @@ public sealed partial class Plugin : BasePlugin
 		{
 			string command = info.GetCommandString.Substring(info.GetCommandString.IndexOf(' ') + 1);
 			Server.ExecuteCommand(command);
-			ShowActivityToPlayers(player?.SteamID, "commands.rcon.success", player?.PlayerName ?? Localizer["k4.general.console"], command);
+			ShowActivityToPlayers(player?.SteamID, "commands.rcon.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), command);
 		}, CommandUsage.CLIENT_AND_SERVER, 1, "<command>", "@zenith-commands/rcon");
 
 		_moduleServices?.RegisterModuleCommands(["give"], "Gives a weapon to a player", (player, info) =>
@@ -185,7 +184,7 @@ public sealed partial class Plugin : BasePlugin
 			Weapon? weapon = Weapon.List.FirstOrDefault(w => w.ClassName.Contains(info.GetArg(2)) || w.Aliases.Any(a => a.Contains(info.GetArg(2))));
 			if (weapon == null)
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer["commands.error.invalid_weapon"]);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.error.invalid_weapon"));
 				return;
 			}
 
@@ -198,7 +197,7 @@ public sealed partial class Plugin : BasePlugin
 
 					if (grenades.Count >= grenadeLimit)
 					{
-						_moduleServices?.PrintForPlayer(player, Localizer["commands.error.grenade_limit", grenadeLimit]);
+						_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.error.grenade_limit", grenadeLimit));
 						return;
 					}
 
@@ -207,7 +206,7 @@ public sealed partial class Plugin : BasePlugin
 						int flashbangLimit = ConVar.Find("ammo_grenade_limit_flashbang")!.GetPrimitiveValue<int>();
 						if (grenades.Count(g => g == "weapon_flashbang") >= flashbangLimit)
 						{
-							_moduleServices?.PrintForPlayer(player, Localizer["commands.error.flashbang_limit", flashbangLimit]);
+							_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.error.flashbang_limit", flashbangLimit));
 							return;
 						}
 					}
@@ -216,7 +215,7 @@ public sealed partial class Plugin : BasePlugin
 						int defaultLimit = ConVar.Find("ammo_grenade_limit_default")!.GetPrimitiveValue<int>();
 						if (grenades.Count(g => g == weapon.ClassName) >= defaultLimit)
 						{
-							_moduleServices?.PrintForPlayer(player, Localizer["commands.error.default_limit", defaultLimit]);
+							_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.error.default_limit", defaultLimit));
 							return;
 						}
 					}
@@ -228,7 +227,7 @@ public sealed partial class Plugin : BasePlugin
 
 					if (healthshots.Count >= healthshotLimit)
 					{
-						_moduleServices?.PrintForPlayer(player, Localizer["commands.error.healthshot_limit", healthshots.Count]);
+						_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.error.healthshot_limit", healthshots.Count));
 						return;
 					}
 				}
@@ -241,7 +240,7 @@ public sealed partial class Plugin : BasePlugin
 				}
 
 				target.GiveNamedItem(weapon.ClassName);
-				ShowActivityToPlayers(player?.SteamID, "commands.give.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName, weapon.Name);
+				ShowActivityToPlayers(player?.SteamID, "commands.give.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName, weapon.Name);
 			}, true);
 		}, CommandUsage.CLIENT_AND_SERVER, 2, "<target> <weapon>", "@zenith-commands/give");
 
@@ -250,20 +249,20 @@ public sealed partial class Plugin : BasePlugin
 			var cvar = ConVar.Find(info.GetArg(1));
 			if (cvar == null)
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer["commands.error.invalid_convar"]);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.error.invalid_convar"));
 				return;
 			}
 
 			string value = info.GetArg(2);
 			SetConvarValue(cvar, value);
-			ShowActivityToPlayers(player?.SteamID, "commands.cvar.success", player?.PlayerName ?? Localizer["k4.general.console"], cvar.Name, value);
+			ShowActivityToPlayers(player?.SteamID, "commands.cvar.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), cvar.Name, value);
 		}, CommandUsage.CLIENT_AND_SERVER, 2, "<convar> <value>", "@zenith-commands/cvar");
 
 		_moduleServices?.RegisterModuleCommands(["speed"], "Sets player speed", (player, info) =>
 		{
 			if (!float.TryParse(info.GetArg(2), out float speed))
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer["commands.error.invalid_speed"]);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.error.invalid_speed"));
 				return;
 			}
 
@@ -273,7 +272,7 @@ public sealed partial class Plugin : BasePlugin
 				{
 					target.PlayerPawn.Value.Speed = speed;
 					Utilities.SetStateChanged(target.PlayerPawn.Value, "CBaseEntity", "m_flSpeed");
-					ShowActivityToPlayers(player?.SteamID, "commands.speed.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName, speed);
+					ShowActivityToPlayers(player?.SteamID, "commands.speed.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName, speed);
 				}
 			}, true);
 		}, CommandUsage.CLIENT_AND_SERVER, 2, "<target> <speed>", "@zenith-commands/speed");
@@ -292,7 +291,7 @@ public sealed partial class Plugin : BasePlugin
 							target.PlayerPawn.Value.Teleport(value);
 					});
 
-					ShowActivityToPlayers(player?.SteamID, "commands.revive.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName);
+					ShowActivityToPlayers(player?.SteamID, "commands.revive.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName);
 				}
 			}, false);
 		}, CommandUsage.CLIENT_AND_SERVER, 1, "<target>", "@zenith-commands/revive");
@@ -305,7 +304,7 @@ public sealed partial class Plugin : BasePlugin
 				{
 					Vector? absOrigin = target.PlayerPawn.Value.AbsOrigin;
 					target.PlayerPawn.Value.Teleport(new(absOrigin!.X, absOrigin.Y, absOrigin.Z - 25.0f));
-					ShowActivityToPlayers(player?.SteamID, "commands.bury.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName);
+					ShowActivityToPlayers(player?.SteamID, "commands.bury.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName);
 				}
 			}, true);
 		}, CommandUsage.CLIENT_AND_SERVER, 1, "<target>", "@zenith-commands/bury");
@@ -318,7 +317,7 @@ public sealed partial class Plugin : BasePlugin
 				{
 					Vector? absOrigin = target.PlayerPawn.Value.AbsOrigin;
 					target.PlayerPawn.Value.Teleport(new(absOrigin!.X, absOrigin.Y, absOrigin.Z + 30.0f));
-					ShowActivityToPlayers(player?.SteamID, "commands.unbury.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName);
+					ShowActivityToPlayers(player?.SteamID, "commands.unbury.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName);
 				}
 			}, true);
 		}, CommandUsage.CLIENT_AND_SERVER, 1, "<target>", "@zenith-commands/bury");
@@ -327,7 +326,7 @@ public sealed partial class Plugin : BasePlugin
 			int damage = 0;
 			if (info.ArgCount >= 3 && !int.TryParse(info.GetArg(2), out damage))
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer["commands.error.invalid_damage"]);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.error.invalid_damage"));
 				return;
 			}
 
@@ -340,7 +339,7 @@ public sealed partial class Plugin : BasePlugin
 					if (pawn.Health - damage <= 0)
 					{
 						pawn.CommitSuicide(false, false);
-						ShowActivityToPlayers(player?.SteamID, "commands.slay.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName);
+						ShowActivityToPlayers(player?.SteamID, "commands.slay.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName);
 						return;
 					}
 
@@ -356,7 +355,7 @@ public sealed partial class Plugin : BasePlugin
 						Random.Shared.Next(200) + 100
 					));
 
-					ShowActivityToPlayers(player?.SteamID, "commands.slap.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName, damage);
+					ShowActivityToPlayers(player?.SteamID, "commands.slap.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName, damage);
 				}
 			}, true);
 		}, CommandUsage.CLIENT_AND_SERVER, 1, "<target> <damage>", "@zenith-commands/slap");
@@ -366,7 +365,7 @@ public sealed partial class Plugin : BasePlugin
 			float value = 0;
 			if (info.ArgCount >= 3 && !float.TryParse(info.GetArg(2), out value))
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer["commands.error.invalid_time"]);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.error.invalid_time"));
 				return;
 			}
 
@@ -393,7 +392,7 @@ public sealed partial class Plugin : BasePlugin
 					});
 				}
 
-				ShowActivityToPlayers(player?.SteamID, "commands.blind.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName, value);
+				ShowActivityToPlayers(player?.SteamID, "commands.blind.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName, value);
 			});
 		}, CommandUsage.CLIENT_AND_SERVER, 1, "<target> <time>", "@zenith-commands/blind");
 
@@ -404,7 +403,7 @@ public sealed partial class Plugin : BasePlugin
 				if (target.PlayerPawn.Value != null)
 				{
 					target.PlayerPawn.Value.BlindUntilTime = Server.CurrentTime - 1;
-					ShowActivityToPlayers(player?.SteamID, "commands.unblind.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName);
+					ShowActivityToPlayers(player?.SteamID, "commands.unblind.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName);
 				}
 			});
 		}, CommandUsage.CLIENT_AND_SERVER, 1, "<target>", "@zenith-commands/blind");
@@ -417,7 +416,7 @@ public sealed partial class Plugin : BasePlugin
 				{
 					bool godModeEnabled = !target.PlayerPawn.Value.TakesDamage;
 					target.PlayerPawn.Value.TakesDamage = godModeEnabled;
-					ShowActivityToPlayers(player?.SteamID, godModeEnabled ? "commands.god.disable" : "commands.god.enable", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName);
+					ShowActivityToPlayers(player?.SteamID, godModeEnabled ? "commands.god.disable" : "commands.god.enable", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName);
 				}
 			}, true);
 		}, CommandUsage.CLIENT_AND_SERVER, 1, "<target>", "@zenith-commands/god");
@@ -427,7 +426,7 @@ public sealed partial class Plugin : BasePlugin
 			CsTeam team = GetTeamFromName(info.GetArg(2));
 			if (team == CsTeam.None)
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer["commands.error.invalid_team"]);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.error.invalid_team"));
 				return;
 			}
 
@@ -440,7 +439,7 @@ public sealed partial class Plugin : BasePlugin
 					else
 						target.SwitchTeam(team);
 
-					ShowActivityToPlayers(player?.SteamID, "commands.team.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName, team);
+					ShowActivityToPlayers(player?.SteamID, "commands.team.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName, team);
 				}
 			});
 		}, CommandUsage.CLIENT_AND_SERVER, 2, "<target> <team>", "@zenith-commands/team");
@@ -452,7 +451,7 @@ public sealed partial class Plugin : BasePlugin
 				if (target.PlayerPawn.Value != null)
 				{
 					target.SwitchTeam(target.Team == CsTeam.Terrorist ? CsTeam.CounterTerrorist : CsTeam.Terrorist);
-					ShowActivityToPlayers(player?.SteamID, "commands.swap.success", player?.PlayerName ?? Localizer["k4.general.console"], target.PlayerName);
+					ShowActivityToPlayers(player?.SteamID, "commands.swap.success", player?.PlayerName ?? Localizer.ForPlayer(player, "k4.general.console"), target.PlayerName);
 				}
 			});
 		}, CommandUsage.CLIENT_AND_SERVER, 1, "<target>", "@zenith-commands/swap");
@@ -468,7 +467,7 @@ public sealed partial class Plugin : BasePlugin
 				player.ChangeTeam(CsTeam.None);
 				AddTimer(0.2f, () => { Server.ExecuteCommand("sv_disable_teamselect_menu 0"); });
 
-				_moduleServices.PrintForPlayer(player, Localizer["commands.hide.success"]);
+				_moduleServices.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.hide.success"));
 			}
 		}, CommandUsage.CLIENT_ONLY, permission: "@zenith-commands/hide");
 
@@ -477,20 +476,20 @@ public sealed partial class Plugin : BasePlugin
 			var players = Utilities.GetPlayers().Where(p => p.IsValid && !p.IsBot && !p.IsHLTV);
 			var ipGroups = players.GroupBy(p => p.IpAddress).Where(g => g.Count() > 1);
 
-			_moduleServices?.PrintForPlayer(player, Localizer["commands.ghosting.header"]);
+			_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.ghosting.header"));
 
 			if (!ipGroups.Any())
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer["commands.ghosting.none"], false);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.ghosting.none"), false);
 			}
 			else
 			{
 				foreach (var group in ipGroups)
 				{
-					_moduleServices?.PrintForPlayer(player, Localizer["commands.ghosting.ip", group.Key ?? "Unknown"], false);
+					_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.ghosting.ip", group.Key ?? "Unknown"), false);
 					foreach (var p in group)
 					{
-						_moduleServices?.PrintForPlayer(player, Localizer["commands.ghosting.player", p.PlayerName, p.SteamID], false);
+						_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "commands.ghosting.player", p.PlayerName, p.SteamID), false);
 					}
 				}
 			}

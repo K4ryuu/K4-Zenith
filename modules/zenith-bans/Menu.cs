@@ -1,5 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
@@ -40,10 +41,10 @@ namespace Zenith_Bans
 
 			if (items.Count == 0)
 			{
-				items.Add(new MenuItem(MenuItemType.Text, new MenuValue(Localizer["k4.general.noplayersfound"]) { Prefix = "<font color='#FF6666'>", Suffix = "</font>" }));
+				items.Add(new MenuItem(MenuItemType.Text, new MenuValue(Localizer.ForPlayer(caller, "k4.general.noplayersfound")) { Prefix = "<font color='#FF6666'>", Suffix = "</font>" }));
 			}
 
-			Menu.ShowScrollableMenu(caller, Localizer["k4.menu.selectplayer"], items, (buttons, menu, selected) =>
+			Menu.ShowScrollableMenu(caller, Localizer.ForPlayer(caller, "k4.menu.selectplayer"), items, (buttons, menu, selected) =>
 			{
 				if (selected == null) return;
 
@@ -56,7 +57,7 @@ namespace Zenith_Bans
 
 		private void ShowChatPlayerSelectionMenu(CCSPlayerController caller, List<CCSPlayerController> players, Action<CCSPlayerController> callback)
 		{
-			ChatMenu playerMenu = new ChatMenu(Localizer["k4.menu.selectplayer"]);
+			ChatMenu playerMenu = new ChatMenu(Localizer.ForPlayer(caller, "k4.menu.selectplayer"));
 
 			foreach (var player in players)
 			{
@@ -65,7 +66,7 @@ namespace Zenith_Bans
 
 			if (playerMenu.MenuOptions.Count == 0)
 			{
-				playerMenu.AddMenuOption($"{ChatColors.LightRed}{Localizer["k4.general.noplayersfound"]}", (p, o) => { }, true);
+				playerMenu.AddMenuOption($"{ChatColors.LightRed}{Localizer.ForPlayer(caller, "k4.general.noplayersfound")}", (p, o) => { }, true);
 			}
 
 			MenuManager.OpenChatMenu(caller, playerMenu);
@@ -93,7 +94,7 @@ namespace Zenith_Bans
 			{
 				if (length == 0)
 				{
-					string permanent = Localizer["k4.general.permanent"];
+					string permanent = Localizer.ForPlayer(caller, "k4.general.permanent");
 					items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(permanent.ToUpper())]));
 				}
 				else
@@ -102,7 +103,7 @@ namespace Zenith_Bans
 				}
 			}
 
-			Menu.ShowScrollableMenu(caller, Localizer["k4.menu.selectlength"], items, (buttons, menu, selected) =>
+			Menu.ShowScrollableMenu(caller, Localizer.ForPlayer(caller, "k4.menu.selectlength"), items, (buttons, menu, selected) =>
 			{
 				if (selected == null) return;
 
@@ -116,12 +117,12 @@ namespace Zenith_Bans
 
 		private void ShowChatLengthSelectionMenu(CCSPlayerController caller, List<int> lengthList, Action<int> callback)
 		{
-			ChatMenu lengthMenu = new ChatMenu(Localizer["k4.menu.selectlength"]);
+			ChatMenu lengthMenu = new ChatMenu(Localizer.ForPlayer(caller, "k4.menu.selectlength"));
 
 			for (int i = 0; i < lengthList.Count; i++)
 			{
 				int length = lengthList[i];
-				string displayText = length == 0 ? Localizer["k4.general.permanent"] : length.ToString();
+				string displayText = length == 0 ? Localizer.ForPlayer(caller, "k4.general.permanent") : length.ToString();
 				lengthMenu.AddMenuOption($"{ChatColors.Gold}{displayText.ToUpper()}", (c, o) => callback(length));
 			}
 
@@ -186,7 +187,7 @@ namespace Zenith_Bans
 		{
 			List<MenuItem> items = groups.Select(group => new MenuItem(MenuItemType.Button, [new MenuValue(group)])).ToList();
 
-			Menu.ShowScrollableMenu(controller, Localizer["k4.addadmin.select-group"], items, (buttons, menu, selected) =>
+			Menu.ShowScrollableMenu(controller, Localizer.ForPlayer(controller, "k4.addadmin.select-group"), items, (buttons, menu, selected) =>
 			{
 				if (selected == null) return;
 
@@ -199,7 +200,7 @@ namespace Zenith_Bans
 
 		private void ShowChatGroupSelectionMenu(CCSPlayerController controller, List<string> groups, Action<string> callback)
 		{
-			ChatMenu groupMenu = new ChatMenu(Localizer["k4.addadmin.select-group"]);
+			ChatMenu groupMenu = new ChatMenu(Localizer.ForPlayer(controller, "k4.addadmin.select-group"));
 
 			foreach (var group in groups)
 			{

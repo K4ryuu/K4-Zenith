@@ -1,3 +1,15 @@
+# 2025.01.20 - 1.0.31
+
+- feat: Enhanced translation system to use player's language instead of server default (thank you for the idea @daffyy)
+- feat: Improved readability of toplist values by adding thousand separators
+- feat: Added warning message for mp_halftime 0 config that conflicts with fake-ranks
+- feat: Improved playtime precision by rounding to 2 decimal places
+- optimise: Reduced memory allocation in rank point calculations
+- fix: Resolved player rank info not saving correctly
+- fix: Fixed database compatibility issues in toplists module
+- fix: Improved toplist query performance and compatibility
+- chore: Removed redundant command description translations
+
 # 2025.01.19 - 1.0.30
 
 - fix: Type convert issues on config cacher for VIPFlags

@@ -1,6 +1,7 @@
 using System.Collections.Concurrent;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Commands;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using Microsoft.Extensions.Logging;
@@ -183,7 +184,7 @@ namespace Zenith
 			if (!HasPermission(player, controller, info, permission))
 				return false;
 
-			if (IsArgumentCountInvalid(info, argCount, helpText))
+			if (IsArgumentCountInvalid(controller, info, argCount, helpText))
 				return false;
 
 			return true;
@@ -194,10 +195,10 @@ namespace Zenith
 			switch (usage)
 			{
 				case CommandUsage.CLIENT_ONLY when player == null || !player.IsValid:
-					info.ReplyToCommand($" {Localizer["k4.general.prefix"]} {Localizer["k4.command.client-only"]}");
+					info.ReplyToCommand($" {Localizer.ForPlayer(player?.Controller, "k4.general.prefix")} {Localizer.ForPlayer(player?.Controller, "k4.command.client-only")}");
 					return false;
 				case CommandUsage.SERVER_ONLY when player != null:
-					info.ReplyToCommand($" {Localizer["k4.general.prefix"]} {Localizer["k4.command.server-only"]}");
+					info.ReplyToCommand($" {Localizer.ForPlayer(player?.Controller, "k4.general.prefix")} {Localizer.ForPlayer(player?.Controller, "k4.command.server-only")}");
 					return false;
 				default:
 					return true;
@@ -214,18 +215,18 @@ namespace Zenith
 				!AdminManager.PlayerHasPermissions(controller, "@css/root") &&
 				(!AdminManager.PlayerHasCommandOverride(controller, info.GetArg(0)) || AdminManager.GetPlayerCommandOverrideState(controller, info.GetArg(0)) == false))
 			{
-				info.ReplyToCommand($" {Localizer["k4.general.prefix"]} {Localizer["k4.command.no-permission"]}");
+				info.ReplyToCommand($" {Localizer.ForPlayer(controller, "k4.general.prefix")} {Localizer.ForPlayer(controller, "k4.command.no-permission")}");
 				return false;
 			}
 
 			return true;
 		}
 
-		private bool IsArgumentCountInvalid(CommandInfo info, int argCount, string? helpText)
+		private bool IsArgumentCountInvalid(CCSPlayerController? controller, CommandInfo info, int argCount, string? helpText)
 		{
 			if (argCount > 0 && info.ArgCount < argCount + 1 && helpText != null)
 			{
-				info.ReplyToCommand($" {Localizer["k4.general.prefix"]} {Localizer["k4.command.help", info.ArgByIndex(0), helpText]}");
+				info.ReplyToCommand($" {Localizer.ForPlayer(controller, "k4.general.prefix")} {Localizer.ForPlayer(controller, "k4.command.help", info.ArgByIndex(0), helpText)}");
 				return true;
 			}
 			return false;

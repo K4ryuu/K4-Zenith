@@ -7,6 +7,7 @@ using Menu;
 using Menu.Enums;
 using Microsoft.Extensions.Logging;
 using CounterStrikeSharp.API.Modules.Commands;
+using CounterStrikeSharp.API.Core.Translations;
 
 namespace Zenith_TopLists;
 
@@ -40,7 +41,7 @@ public class TimeTopHandler
 			}
 			else
 			{
-				_plugin.ModuleServices?.PrintForPlayer(player, _plugin.Localizer["timetop.invalid.count", TopListsPlugin.DEFAULT_PLAYER_COUNT]);
+				_plugin.ModuleServices?.PrintForPlayer(player, _plugin.Localizer.ForPlayer(player, "timetop.invalid.count", TopListsPlugin.DEFAULT_PLAYER_COUNT));
 			}
 		}
 
@@ -63,10 +64,10 @@ public class TimeTopHandler
 	{
 		var items = Enum.GetValues(typeof(TimeCategory))
 			.Cast<TimeCategory>()
-			.Select(category => new MenuItem(MenuItemType.Button, [new MenuValue(_plugin.Localizer[$"timetop.category.{category}"])]))
+			.Select(category => new MenuItem(MenuItemType.Button, [new MenuValue(_plugin.Localizer.ForPlayer(player, $"timetop.category.{category}"))]))
 			.ToList();
 
-		_plugin.menu?.ShowScrollableMenu(player, _plugin.Localizer["timetop.category.menu.title"], items, (buttons, menu, selected) =>
+		_plugin.menu?.ShowScrollableMenu(player, _plugin.Localizer.ForPlayer(player, "timetop.category.menu.title"), items, (buttons, menu, selected) =>
 		{
 			if (selected == null) return;
 
@@ -84,11 +85,11 @@ public class TimeTopHandler
 
 	private void ShowChatTimeTopCategoryMenu(CCSPlayerController player, int playerCount)
 	{
-		var chatMenu = new ChatMenu(_plugin.Localizer["timetop.category.menu.title"]);
+		var chatMenu = new ChatMenu(_plugin.Localizer.ForPlayer(player, "timetop.category.menu.title"));
 
 		foreach (TimeCategory category in Enum.GetValues(typeof(TimeCategory)))
 		{
-			chatMenu.AddMenuOption(_plugin.Localizer[$"timetop.category.{category}"], (p, _) =>
+			chatMenu.AddMenuOption(_plugin.Localizer.ForPlayer(player, $"timetop.category.{category}"), (p, _) =>
 			{
 				ShowTimeTopMenu(p, category, playerCount);
 			});
@@ -107,7 +108,7 @@ public class TimeTopHandler
 			{
 				if (topPlayers.Count == 0)
 				{
-					_plugin.ModuleServices?.PrintForPlayer(player, _plugin.Localizer["timetop.no.data"]);
+					_plugin.ModuleServices?.PrintForPlayer(player, _plugin.Localizer.ForPlayer(player, "timetop.no.data"));
 					return;
 				}
 
@@ -132,28 +133,28 @@ public class TimeTopHandler
 
 	private void ShowCenterTimeTopMenu(CCSPlayerController player, List<(string Name, double Time)> topPlayers)
 	{
-		var items = topPlayers.Select((p, index) => new MenuItem(MenuItemType.Button, [new MenuValue(_plugin.Localizer["timetop.player.entry.center", index + 1, p.Name, FormatTime(p.Time)])])).ToList();
+		var items = topPlayers.Select((p, index) => new MenuItem(MenuItemType.Button, [new MenuValue(_plugin.Localizer.ForPlayer(player, "timetop.player.entry.center", index + 1, p.Name, FormatTime(player, p.Time)))])).ToList();
 
-		_plugin.menu?.ShowScrollableMenu(player, _plugin.Localizer["top.menu.title", topPlayers.Count], items, (_, _, _) => { }, true, _plugin.CoreAccessor!.GetValue<bool>("Core", "FreezeInMenu") && (_plugin.GetZenithPlayer(player)?.GetSetting<bool>("FreezeInMenu", "K4-Zenith") ?? true), 5, disableDeveloper: !_plugin.CoreAccessor!.GetValue<bool>("Core", "ShowDevelopers"));
+		_plugin.menu?.ShowScrollableMenu(player, _plugin.Localizer.ForPlayer(player, "top.menu.title", topPlayers.Count), items, (_, _, _) => { }, true, _plugin.CoreAccessor!.GetValue<bool>("Core", "FreezeInMenu") && (_plugin.GetZenithPlayer(player)?.GetSetting<bool>("FreezeInMenu", "K4-Zenith") ?? true), 5, disableDeveloper: !_plugin.CoreAccessor!.GetValue<bool>("Core", "ShowDevelopers"));
 	}
 
 	private void ShowChatTimeTopMenu(CCSPlayerController player, List<(string Name, double Time)> topPlayers)
 	{
-		var chatMenu = new ChatMenu(_plugin.Localizer["top.menu.title", topPlayers.Count]);
+		var chatMenu = new ChatMenu(_plugin.Localizer.ForPlayer(player, "top.menu.title", topPlayers.Count));
 
 		for (int i = 0; i < topPlayers.Count; i++)
 		{
 			var (Name, Time) = topPlayers[i];
-			chatMenu.AddMenuOption(_plugin.Localizer["timetop.player.entry.chat", i + 1, Name, FormatTime(Time)], (_, _) => { });
+			chatMenu.AddMenuOption(_plugin.Localizer.ForPlayer(player, "timetop.player.entry.chat", i + 1, Name, FormatTime(player, Time)), (_, _) => { });
 		}
 
 		MenuManager.OpenChatMenu(player, chatMenu);
 	}
 
-	private string FormatTime(double minutes)
+	private string FormatTime(CCSPlayerController player, double minutes)
 	{
 		TimeSpan time = TimeSpan.FromMinutes(minutes);
-		return _plugin.Localizer["timetop.time.format", time.Days, time.Hours, time.Minutes];
+		return _plugin.Localizer.ForPlayer(player, "timetop.time.format", time.Days, time.Hours, time.Minutes);
 	}
 
 	private async Task<List<(string Name, double Time)>> GetTopPlayersTimeAsync(TimeCategory category, int limit)
@@ -173,10 +174,11 @@ public class TimeTopHandler
 
 			var columnName = "K4-Zenith-TimeStats.storage";
 			var query = $@"
-				SELECT name,
-					   CAST(JSON_UNQUOTE(JSON_EXTRACT(@ColumnName, '$.{category}')) AS DECIMAL(10,2)) AS Time
-				FROM zenith_player_storage
-				WHERE @ColumnName IS NOT NULL
+				SELECT p.name,
+					CAST(JSON_EXTRACT(p.`{columnName}`, '$.{category}') AS DECIMAL(10,2)) as Time
+				FROM zenith_player_storage p
+				WHERE JSON_VALID(p.`{columnName}`) = 1
+				AND JSON_EXTRACT(p.`{columnName}`, '$.{category}') IS NOT NULL
 				ORDER BY Time DESC
 				LIMIT @Limit";
 

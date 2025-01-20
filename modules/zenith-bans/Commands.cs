@@ -1,5 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Commands.Targeting;
@@ -91,7 +92,7 @@ namespace Zenith_Bans
 			if (info.ArgCount < requiredArgs)
 			{
 				string usage = forceReason ? $"{info.GetArg(0)} <SteamID64/name> <reason>" : $"{info.GetArg(0)} <SteamID64/name> [reason]";
-				_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.invalid-usage", usage]);
+				_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.invalid-usage", usage));
 				return;
 			}
 
@@ -102,7 +103,7 @@ namespace Zenith_Bans
 
 			if (forceReason && string.IsNullOrWhiteSpace(reason))
 			{
-				_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.reason-required"]);
+				_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.reason-required"));
 				return;
 			}
 
@@ -120,7 +121,7 @@ namespace Zenith_Bans
 					{
 						if (matchingPlayers.Count == 0)
 						{
-							_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.noplayersfound"]);
+							_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.noplayersfound"));
 						}
 						else if (matchingPlayers.Count == 1)
 						{
@@ -128,7 +129,7 @@ namespace Zenith_Bans
 						}
 						else
 						{
-							_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.multiple-players-found"]);
+							_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.multiple-players-found"));
 							foreach (var player in matchingPlayers)
 							{
 								_moduleServices?.PrintForPlayer(controller, $"{player.PlayerName} ({player.SteamID})");
@@ -214,7 +215,7 @@ namespace Zenith_Bans
 			if (info.ArgCount < requiredArgs)
 			{
 				string usage = forceReason ? $"{info.GetArg(0)} <player> <reason>" : $"{info.GetArg(0)} <player> [reason]";
-				_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.invalid-usage", usage]);
+				_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.invalid-usage", usage));
 				return;
 			}
 
@@ -225,7 +226,7 @@ namespace Zenith_Bans
 
 			if (forceReason && string.IsNullOrWhiteSpace(reason))
 			{
-				_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.reason-required"]);
+				_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.reason-required"));
 				return;
 			}
 
@@ -241,7 +242,7 @@ namespace Zenith_Bans
 					}
 					else
 					{
-						_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.targetnotfound"]);
+						_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.targetnotfound"));
 					}
 				}
 			});
@@ -249,7 +250,7 @@ namespace Zenith_Bans
 
 		private void ClearWarns(CCSPlayerController? caller, CCSPlayerController target, string? reason)
 		{
-			string callerName = caller?.PlayerName ?? Localizer["k4.general.console"];
+			string callerName = caller?.PlayerName ?? Localizer.ForPlayer(caller, "k4.general.console");
 			ulong callerSteamId = caller?.SteamID ?? 0;
 
 			ulong targetSteamId = target.SteamID;
@@ -268,11 +269,11 @@ namespace Zenith_Bans
 							playerData.Punishments.RemoveAll(p => p.Type == PunishmentType.Warn);
 						}
 						Logger.LogWarning($"Player {targetName} ({targetSteamId})'s warns were cleared by {callerName} {caller?.SteamID ?? 0}");
-						_moduleServices?.PrintForAll(Localizer["k4.chat.clearwarns", callerName, targetName]);
+						_moduleServices?.PrintForAll(Localizer.ForPlayer(caller, "k4.chat.clearwarns", callerName, targetName));
 					}
 					else
 					{
-						_moduleServices?.PrintForPlayer(caller, Localizer["k4.general.no-active-warns"]);
+						_moduleServices?.PrintForPlayer(caller, Localizer.ForPlayer(caller, "k4.general.no-active-warns"));
 					}
 				});
 			});
@@ -280,7 +281,7 @@ namespace Zenith_Bans
 
 		private void ClearWarns(CCSPlayerController? caller, SteamID steamId, string? reason)
 		{
-			string callerName = caller?.PlayerName ?? Localizer["k4.general.console"];
+			string callerName = caller?.PlayerName ?? Localizer.ForPlayer(caller, "k4.general.console");
 			ulong callerSteamId = caller?.SteamID ?? 0;
 
 			ulong targetSteamId = steamId.SteamId64;
@@ -295,11 +296,11 @@ namespace Zenith_Bans
 					if (removed)
 					{
 						Logger.LogWarning($"Player {targetName} ({targetSteamId})'s warns were cleared by {callerName} {caller?.SteamID ?? 0}");
-						_moduleServices?.PrintForAll(Localizer["k4.chat.clearwarns", callerName, targetName]);
+						_moduleServices?.PrintForAll(Localizer.ForPlayer(caller, "k4.chat.clearwarns", callerName, targetName));
 					}
 					else
 					{
-						_moduleServices?.PrintForPlayer(caller, Localizer["k4.general.no-active-warns"]);
+						_moduleServices?.PrintForPlayer(caller, Localizer.ForPlayer(caller, "k4.general.no-active-warns"));
 					}
 				});
 			});
@@ -357,7 +358,7 @@ namespace Zenith_Bans
 
 			if (_disconnectedPlayers.Count == 0)
 			{
-				_moduleServices?.PrintForPlayer(controller, Localizer["k4.banoffline.no-disconnected-players"]);
+				_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.banoffline.no-disconnected-players"));
 				return;
 			}
 
@@ -369,17 +370,17 @@ namespace Zenith_Bans
 			{
 				string timeSinceDisconnect = (DateTime.Now - player.DisconnectedAt).TotalMinutes.ToString("F0");
 				items.Add(new MenuItem(MenuItemType.Button, [
-					new MenuValue(Localizer["k4.banoffline.player-info",
+					new MenuValue(Localizer.ForPlayer(controller, "k4.banoffline.player-info",
 						player.PlayerName,
 						player.SteamId,
-						Localizer["k4.general.time-ago", timeSinceDisconnect]
-					])
+						Localizer.ForPlayer(controller, "k4.general.time-ago", timeSinceDisconnect)
+					))
 				]));
 				playerMap[index] = player;
 				index++;
 			}
 
-			Menu.ShowScrollableMenu(controller, Localizer["k4.banoffline.menu-title"], items, (buttons, menu, selected) =>
+			Menu.ShowScrollableMenu(controller, Localizer.ForPlayer(controller, "k4.banoffline.menu-title"), items, (buttons, menu, selected) =>
 			{
 				if (selected == null) return;
 
@@ -414,7 +415,7 @@ namespace Zenith_Bans
 		{
 			if (info.ArgCount < 2)
 			{
-				_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.invalid-usage", "addadmin <player> [group]"]);
+				_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.invalid-usage", "addadmin <player> [group]"));
 				return;
 			}
 
@@ -436,7 +437,7 @@ namespace Zenith_Bans
 							if (controller != null)
 								ShowGroupSelectionMenu(controller, groups, (group) => AddAdmin(controller, target, group));
 							else
-								_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.invalid-usage", "addadmin <player> [group]"]);
+								_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.invalid-usage", "addadmin <player> [group]"));
 						}
 						else
 						{
@@ -446,7 +447,7 @@ namespace Zenith_Bans
 							}
 							else
 							{
-								_moduleServices?.PrintForPlayer(controller, Localizer["k4.addadmin.invalid-group", group]);
+								_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.addadmin.invalid-group", group));
 							}
 						}
 					});
@@ -462,7 +463,7 @@ namespace Zenith_Bans
 		{
 			if (info.ArgCount < 2)
 			{
-				_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.invalid-usage", "removeadmin <player>"]);
+				_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.invalid-usage", "removeadmin <player>"));
 				return;
 			}
 
@@ -477,14 +478,14 @@ namespace Zenith_Bans
 		{
 			if (info.ArgCount < 2)
 			{
-				_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.invalid-usage", "addofflineadmin <SteamID64> [group]"]);
+				_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.invalid-usage", "addofflineadmin <SteamID64> [group]"));
 				return;
 			}
 
 			SteamID steamId = GetSteamID(info.GetArg(1));
 			if (!steamId.IsValid())
 			{
-				_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.invalid-steamid"]);
+				_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.invalid-steamid"));
 				return;
 			}
 
@@ -504,7 +505,7 @@ namespace Zenith_Bans
 						if (controller != null)
 							ShowGroupSelectionMenu(controller, groups, (group) => AddOfflineAdmin(controller, steamId, group));
 						else
-							_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.invalid-usage", "addofflineadmin <SteamID64> [group]"]);
+							_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.invalid-usage", "addofflineadmin <SteamID64> [group]"));
 					}
 					else
 					{
@@ -514,7 +515,7 @@ namespace Zenith_Bans
 						}
 						else
 						{
-							_moduleServices?.PrintForPlayer(controller, Localizer["k4.addadmin.invalid-group", group]);
+							_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.addadmin.invalid-group", group));
 						}
 					}
 				});
@@ -529,14 +530,14 @@ namespace Zenith_Bans
 		{
 			if (info.ArgCount < 2)
 			{
-				_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.invalid-usage", "removeofflineadmin <SteamID64>"]);
+				_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.invalid-usage", "removeofflineadmin <SteamID64>"));
 				return;
 			}
 
 			SteamID steamId = GetSteamID(info.GetArg(1));
 			if (!steamId.IsValid())
 			{
-				_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.invalid-steamid"]);
+				_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.invalid-steamid"));
 				return;
 			}
 
@@ -549,13 +550,13 @@ namespace Zenith_Bans
 
 		private void OnPrivateSayCommand(CCSPlayerController? controller, CommandInfo info)
 		{
-			string callerName = controller?.PlayerName ?? Localizer["k4.general.console"];
+			string callerName = controller?.PlayerName ?? Localizer.ForPlayer(controller, "k4.general.console");
 			string message = info.GetCommandString.Replace(info.GetArg(0), string.Empty).Replace(info.GetArg(1), string.Empty).Trim();
 
 			ProcessTargetAction(controller, info.GetArgTargetResult(1), (target) =>
 			{
-				target.PrintToChat($" {Localizer["k4.chat.psay", callerName, target.PlayerName, message]}");
-				controller?.PrintToChat($" {Localizer["k4.chat.psay", callerName, target.PlayerName, message]}");
+				target.PrintToChat($" {Localizer.ForPlayer(controller, "k4.chat.psay", callerName, target.PlayerName, message)}");
+				controller?.PrintToChat($" {Localizer.ForPlayer(controller, "k4.chat.psay", callerName, target.PlayerName, message)}");
 			}, checkImmunity: false, selfTarget: false);
 		}
 
@@ -614,9 +615,9 @@ namespace Zenith_Bans
 				return;
 
 			if (controller != null)
-				controller.PrintToConsole(Localizer["k4.console.playerinfo.liner"]);
+				controller.PrintToConsole(Localizer.ForPlayer(controller, "k4.console.playerinfo.liner"));
 			else
-				Server.PrintToConsole(Localizer["k4.console.playerinfo.liner"]);
+				Server.PrintToConsole(Localizer.ForPlayer(controller, "k4.console.playerinfo.liner"));
 
 			foreach (var player in players)
 			{
@@ -629,15 +630,15 @@ namespace Zenith_Bans
 				string[] parts = country.Split('|');
 
 				if (controller != null)
-					controller.PrintToConsole(zenithPlayer.ReplacePlaceholders(Localizer["k4.console.playerinfo.line", $"{parts[0],-3}", $"{parts[1],-3}", $"{parts[2],-24}", $"{parts[3],-18}", $"{parts[4].Split(":")[0],-16}"]));
+					controller.PrintToConsole(zenithPlayer.ReplacePlaceholders(Localizer.ForPlayer(controller, "k4.console.playerinfo.line", $"{parts[0],-3}", $"{parts[1],-3}", $"{parts[2],-24}", $"{parts[3],-18}", $"{parts[4].Split(":")[0],-16}")));
 				else
-					Server.PrintToConsole(zenithPlayer.ReplacePlaceholders(Localizer["k4.console.playerinfo.line", $"{parts[0],-3}", $"{parts[1],-3}", $"{parts[2],-24}", $"{parts[3],-18}", $"{parts[4].Split(":")[0],-16}"]));
+					Server.PrintToConsole(zenithPlayer.ReplacePlaceholders(Localizer.ForPlayer(controller, "k4.console.playerinfo.line", $"{parts[0],-3}", $"{parts[1],-3}", $"{parts[2],-24}", $"{parts[3],-18}", $"{parts[4].Split(":")[0],-16}")));
 			}
 
 			if (controller != null)
-				controller.PrintToConsole(Localizer["k4.console.playerinfo.liner"]);
+				controller.PrintToConsole(Localizer.ForPlayer(controller, "k4.console.playerinfo.liner"));
 			else
-				Server.PrintToConsole(Localizer["k4.console.playerinfo.liner"]);
+				Server.PrintToConsole(Localizer.ForPlayer(controller, "k4.console.playerinfo.liner"));
 		}
 
 		// +------------------------+
@@ -653,11 +654,11 @@ namespace Zenith_Bans
 			if (!ChatSpyPlayers.Remove(controller))
 			{
 				ChatSpyPlayers.Add(controller);
-				controller.PrintToChat(Localizer["k4.chatspy.enabled"]);
+				controller.PrintToChat(Localizer.ForPlayer(controller, "k4.chatspy.enabled"));
 			}
 			else
 			{
-				controller.PrintToChat(Localizer["k4.chatspy.disabled"]);
+				controller.PrintToChat(Localizer.ForPlayer(controller, "k4.chatspy.disabled"));
 			}
 		}
 	}

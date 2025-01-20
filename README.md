@@ -129,12 +129,10 @@ These configuration files are made with YAML, which results in that we add descr
 
 ## Roadmap
 
-- [ ] Add credits to README
+- [ ] Optimise functions to call less var allocations
 - [ ] Example developer files
 - [ ] Wall toplists using placeholders from core
-- [ ] Toplists
 - [ ] Admin Menu
-- [ ] Admin Chat commands
 - [ ] Vote Manager module
 - [ ] Game management system + connect messages
 - [ ] Map management system

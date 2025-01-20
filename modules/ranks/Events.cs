@@ -1,5 +1,7 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
+using CounterStrikeSharp.API.Modules.Cvars;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Logging;
 using ZenithAPI;
@@ -23,7 +25,12 @@ namespace Zenith_Ranks
 				Logger.LogInformation("To enable fake ranks, set 'FollowCS2ServerGuidelines' to false in the Core configuration (configs/core.cfg).");
 			}
 			else
+			{
 				RegisterListener<Listeners.OnTick>(UpdateScoreboards);
+
+				if (ConVar.Find("mp_halftime")?.GetPrimitiveValue<bool>() == false)
+					Logger.LogWarning("Halftime is disabled, this may lead to scoreboard render issues.");
+			}
 
 			RegisterEventHandler<EventRoundEnd>(OnRoundEnd, HookMode.Post);
 			RegisterEventHandler<EventRoundPrestart>(OnRoundPrestart, HookMode.Post);
@@ -69,7 +76,7 @@ namespace Zenith_Ranks
 					{
 						if (player.GetSetting<bool>("ShowRankChanges") && _roundPoints.TryGetValue(player.Controller, out int points))
 						{
-							string message = points > 0 ? Localizer["k4.phrases.round-summary-earn", points] : Localizer["k4.phrases.round-summary-lose", points];
+							string message = points > 0 ? Localizer.ForPlayer(player.Controller, "k4.phrases.round-summary-earn", points) : Localizer.ForPlayer(player.Controller, "k4.phrases.round-summary-lose", points);
 							player.Print(message);
 						}
 					}
@@ -273,7 +280,7 @@ namespace Zenith_Ranks
 				int requiredPlayers = _configAccessor.GetValue<int>("Settings", "MinPlayers");
 				if (requiredPlayers > Utilities.GetPlayers().Count(p => p.IsValid && !p.IsBot && !p.IsHLTV) && !_playerSpawned.Contains(player))
 				{
-					_moduleServices?.PrintForPlayer(player, Localizer["k4.phrases.points_disabled", requiredPlayers]);
+					_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "k4.phrases.points_disabled", requiredPlayers));
 				}
 			}
 
@@ -346,7 +353,7 @@ namespace Zenith_Ranks
 						return;
 
 					string? eventInfo = attacker != null && _plugin._configAccessor.GetValue<bool>("Settings", "ExtendedDeathMessages")
-						? (_plugin.Localizer["k4.phrases.death-extended", attacker.Name, $"{attacker.GetStorage<long>("Points"):N0}"] ?? string.Empty)
+						? (_plugin.Localizer.ForPlayer(victim.Controller, "k4.phrases.death-extended", attacker.Name, $"{attacker.GetStorage<long>("Points"):N0}") ?? string.Empty)
 						: null;
 
 					int points = attacker != null && _plugin._configAccessor.GetValue<bool>("Settings", "DynamicDeathPoints")
@@ -377,7 +384,7 @@ namespace Zenith_Ranks
 			private void HandleKillEvent(IPlayerServices attacker, IPlayerServices? victim, EventPlayerDeath deathEvent)
 			{
 				string? eventInfo = victim != null && _plugin._configAccessor.GetValue<bool>("Settings", "ExtendedDeathMessages")
-					? (_plugin.Localizer["k4.phrases.kill-extended", victim.Name, $"{victim.GetStorage<long>("Points"):N0}"] ?? string.Empty)
+					? (_plugin.Localizer.ForPlayer(attacker.Controller, "k4.phrases.kill-extended", victim.Name, $"{victim.GetStorage<long>("Points"):N0}") ?? string.Empty)
 					: null;
 
 				int points = _plugin._configAccessor.GetValue<bool>("Settings", "DynamicDeathPoints") && victim != null
@@ -478,7 +485,7 @@ namespace Zenith_Ranks
 				else
 				{
 					string? eventInfo = victim != null && _plugin._configAccessor.GetValue<bool>("Settings", "ExtendedDeathMessages")
-						? (_plugin.Localizer["k4.phrases.assist-extended", victim.Name, $"{victim.GetStorage<long>("Points"):N0}"] ?? string.Empty)
+						? (_plugin.Localizer.ForPlayer(assister.Controller, "k4.phrases.assist-extended", victim.Name, $"{victim.GetStorage<long>("Points"):N0}") ?? string.Empty)
 						: null;
 
 					_plugin.ModifyPlayerPoints(assister, _plugin._configAccessor.GetValue<int>("Points", "Assist"), "k4.events.assist", eventInfo);

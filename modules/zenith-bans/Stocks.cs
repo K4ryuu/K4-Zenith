@@ -1,6 +1,7 @@
 using System.Text;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Commands.Targeting;
@@ -48,14 +49,14 @@ namespace Zenith_Bans
 		{
 			if (!selfTarget && caller == target)
 			{
-				_moduleServices?.PrintForPlayer(caller, Localizer["k4.general.selftarget"]);
+				_moduleServices?.PrintForPlayer(caller, Localizer.ForPlayer(caller, "k4.general.selftarget"));
 				onFail?.Invoke(TargetFailureReason.TargetSelf);
 				return;
 			}
 
 			if (checkImmunity && !AdminManager.CanPlayerTarget(caller, target))
 			{
-				_moduleServices?.PrintForPlayer(caller, Localizer["k4.general.targetimmunity", target.PlayerName]);
+				_moduleServices?.PrintForPlayer(caller, Localizer.ForPlayer(caller, "k4.general.targetimmunity", target.PlayerName));
 				onFail?.Invoke(TargetFailureReason.TargetImmunity);
 				return;
 			}
@@ -220,7 +221,7 @@ namespace Zenith_Bans
 				}
 				else
 				{
-					string reason = info.ArgCount > 3 ? info.GetCommandString.Replace(info.GetArg(0), string.Empty).Replace(info.GetArg(1), string.Empty).Replace(info.GetArg(2), string.Empty).Trim() : Localizer["k4.general.no-reason"];
+					string reason = info.ArgCount > 3 ? info.GetCommandString.Replace(info.GetArg(0), string.Empty).Replace(info.GetArg(1), string.Empty).Replace(info.GetArg(2), string.Empty).Trim() : Localizer.ForPlayer(controller, "k4.general.no-reason");
 					ProcessTargetAction(controller, targetResult, target => ApplyPunishment(controller, target, type, duration, reason), failureReason =>
 					{
 						if (failureReason == TargetFailureReason.TargetNotFound && SteamID.TryParse(targetString, out SteamID? steamId) && steamId?.IsValid() == true)
@@ -229,14 +230,14 @@ namespace Zenith_Bans
 						}
 						else if (failureReason == TargetFailureReason.TargetNotFound)
 						{
-							_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.invalid-target"]);
+							_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.invalid-target"));
 						}
 					});
 				}
 			}
 			else
 			{
-				_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.invalid-punish-length"]);
+				_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.invalid-punish-length"));
 			}
 		}
 
@@ -378,7 +379,7 @@ namespace Zenith_Bans
 					}
 					else if (ShouldShowActivity(callerSteamId, player, false))
 					{
-						BroadcastToPlayer(player, localizationKey, Localizer["k4.general.admin"], targetName, durationString, reason);
+						BroadcastToPlayer(player, localizationKey, Localizer.ForPlayer(player, "k4.general.admin"), targetName, durationString, reason);
 					}
 				}
 			}
@@ -398,15 +399,15 @@ namespace Zenith_Bans
 		{
 			if (localizationKey.EndsWith(".permanent"))
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer[localizationKey, adminName, targetName, reason]);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, localizationKey, adminName, targetName, reason));
 			}
 			else if (localizationKey.Contains("kick") || localizationKey.Contains("warn"))
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer[localizationKey, adminName, targetName, reason]);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, localizationKey, adminName, targetName, reason));
 			}
 			else
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer[localizationKey, adminName, targetName, durationString, reason]);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, localizationKey, adminName, targetName, durationString, reason));
 			}
 		}
 
@@ -515,7 +516,7 @@ namespace Zenith_Bans
 		{
 			if (info.ArgCount < 2)
 			{
-				_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.invalid-usage", $"un{type.ToString().ToLower()} <player>"]);
+				_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.invalid-usage", $"un{type.ToString().ToLower()} <player>"));
 				return;
 			}
 
@@ -531,7 +532,7 @@ namespace Zenith_Bans
 					}
 					else
 					{
-						_moduleServices?.PrintForPlayer(controller, Localizer["k4.general.targetnotfound"]);
+						_moduleServices?.PrintForPlayer(controller, Localizer.ForPlayer(controller, "k4.general.targetnotfound"));
 					}
 				}
 			});
@@ -588,29 +589,28 @@ namespace Zenith_Bans
 
 		private void RemovePunishment(CCSPlayerController? caller, CCSPlayerController target, PunishmentType type, string? reason)
 		{
-			string callerName = caller?.PlayerName ?? Localizer["k4.general.console"];
-			ulong? callerSteamId = caller?.SteamID;
-			ulong targetSteamId = target.SteamID;
-			string targetName = target.PlayerName;
-
 			if (_coreAccessor.GetValue<bool>("Config", "ForceRemovePunishmentReason") && string.IsNullOrWhiteSpace(reason))
 			{
-				_moduleServices?.PrintForPlayer(caller, Localizer["k4.general.reason-required"]);
+				_moduleServices?.PrintForPlayer(caller, Localizer.ForPlayer(caller, "k4.general.reason-required"));
 				return;
 			}
 
-			// Ellenőrizzük a cache-ből, hogy van-e aktív büntetése
+			ulong targetSteamId = target.SteamID;
+
 			if (_playerCache.TryGetValue(targetSteamId, out var playerData))
 			{
 				var activePunishment = playerData.Punishments.FirstOrDefault(p => p.Type == type);
 				if (activePunishment == null)
 				{
-					_moduleServices?.PrintForPlayer(caller, Localizer["k4.general.no-active-punishment", type.ToString().ToLower()]);
+					_moduleServices?.PrintForPlayer(caller, Localizer.ForPlayer(caller, "k4.general.no-active-punishment", type.ToString().ToLower()));
 					return;
 				}
 			}
 
+			string targetName = target.PlayerName;
+			ulong? callerSteamId = caller?.SteamID;
 			uint? callerImmunity = caller != null ? AdminManager.GetPlayerImmunity(caller) : null;
+			string callerName = caller?.PlayerName ?? Localizer["k4.general.console"];
 
 			_ = Task.Run(async () =>
 			{
@@ -631,27 +631,25 @@ namespace Zenith_Bans
 
 		private void RemovePunishment(CCSPlayerController? caller, SteamID steamId, PunishmentType type, string? reason)
 		{
-			string callerName = caller?.PlayerName ?? Localizer["k4.general.console"];
-			ulong? callerSteamId = caller?.SteamID;
-			ulong targetSteamId = steamId.SteamId64;
-
 			if (_coreAccessor.GetValue<bool>("Config", "ForceRemovePunishmentReason") && string.IsNullOrWhiteSpace(reason))
 			{
-				_moduleServices?.PrintForPlayer(caller, Localizer["k4.general.reason-required"]);
+				_moduleServices?.PrintForPlayer(caller, Localizer.ForPlayer(caller, "k4.general.reason-required"));
 				return;
 			}
 
+			string callerName = caller?.PlayerName ?? Localizer["k4.general.console"];
+			ulong? callerSteamId = caller?.SteamID;
+			ulong targetSteamId = steamId.SteamId64;
 			uint? callerImmunity = caller != null ? AdminManager.GetPlayerImmunity(caller) : null;
 
 			_ = Task.Run(async () =>
 			{
-				// Offline játékosnál ellenőrizzük az adatbázisból az aktív büntetéseket
 				var activePunishments = await GetActivePunishmentsAsync(targetSteamId);
 				if (!activePunishments.Any(p => p.Type == type))
 				{
 					Server.NextWorldUpdate(() =>
 					{
-						_moduleServices?.PrintForPlayer(caller, Localizer["k4.general.no-active-punishment", type.ToString().ToLower()]);
+						_moduleServices?.PrintForPlayer(caller, Localizer.ForPlayer(caller, "k4.general.no-active-punishment", type.ToString().ToLower()));
 					});
 					return;
 				}
@@ -661,7 +659,7 @@ namespace Zenith_Bans
 				{
 					Server.NextWorldUpdate(() =>
 					{
-						_moduleServices?.PrintForPlayer(caller, Localizer["k4.general.no-permission-due-to-immunity"]);
+						_moduleServices?.PrintForPlayer(caller, Localizer.ForPlayer(caller, "k4.general.no-permission-due-to-immunity"));
 					});
 					return;
 				}
@@ -708,7 +706,7 @@ namespace Zenith_Bans
 				}
 				else
 				{
-					_moduleServices?.PrintForPlayer(caller, Localizer["k4.general.no-active-punishment", type.ToString().ToLower()]);
+					_moduleServices?.PrintForPlayer(caller, Localizer.ForPlayer(caller, "k4.general.no-active-punishment", type.ToString().ToLower()));
 				}
 			});
 		}
@@ -718,7 +716,6 @@ namespace Zenith_Bans
 			var players = Utilities.GetPlayers();
 			string punishmentKey = $"k4.chat.un{type.ToString().ToLower()}";
 			string punishmentKeyWithReason = $"{punishmentKey}.withreason";
-			string adminName = Localizer["k4.general.admin"];
 
 			foreach (var player in players)
 			{
@@ -728,22 +725,24 @@ namespace Zenith_Bans
 					{
 						if (!string.IsNullOrEmpty(removeReason))
 						{
-							_moduleServices?.PrintForPlayer(player, Localizer[punishmentKeyWithReason, callerName, targetName, removeReason]);
+							_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, punishmentKeyWithReason, callerName, targetName, removeReason));
 						}
 						else
 						{
-							_moduleServices?.PrintForPlayer(player, Localizer[punishmentKey, callerName, targetName]);
+							_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, punishmentKey, callerName, targetName));
 						}
 					}
 					else if (ShouldShowActivity(callerSteamId, player, false))
 					{
+						string adminName = Localizer.ForPlayer(player, "k4.general.admin");
+
 						if (!string.IsNullOrEmpty(removeReason))
 						{
-							_moduleServices?.PrintForPlayer(player, Localizer[punishmentKeyWithReason, adminName, targetName, removeReason]);
+							_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, punishmentKeyWithReason, adminName, targetName, removeReason));
 						}
 						else
 						{
-							_moduleServices?.PrintForPlayer(player, Localizer[punishmentKey, adminName, targetName]);
+							_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, punishmentKey, adminName, targetName));
 						}
 					}
 				}
@@ -783,7 +782,7 @@ namespace Zenith_Bans
 
 				Server.NextWorldUpdate(() =>
 				{
-					_moduleServices?.PrintForPlayer(checker, Localizer["k4.commscheck.header", target.PlayerName]);
+					_moduleServices?.PrintForPlayer(checker, Localizer.ForPlayer(checker, "k4.commscheck.header", target.PlayerName));
 					ProcessCommsPunishment(checker, mutePunishment, "k4.commscheck.mute", "k4.commscheck.no-mute");
 					ProcessCommsPunishment(checker, gagPunishment, "k4.commscheck.gag", "k4.commscheck.no-gag");
 				});
@@ -794,36 +793,36 @@ namespace Zenith_Bans
 		{
 			if (punishment != null)
 			{
-				string duration = GetPunishmentDuration(punishment);
+				string duration = GetPunishmentDuration(checker, punishment);
 				bool showAdminName = ShouldShowActivity(punishment.AdminSteamId, checker, true);
 				bool showAnonymous = !showAdminName && ShouldShowActivity(punishment.AdminSteamId, checker, false);
 
 				if (showAdminName || showAnonymous)
 				{
 					string adminName = showAdminName
-						? (string.IsNullOrEmpty(punishment.PunisherName) ? Localizer["k4.general.console"] : punishment.PunisherName)
-						: Localizer["k4.general.admin"];
+						? (string.IsNullOrEmpty(punishment.PunisherName) ? Localizer.ForPlayer(checker, "k4.general.console") : punishment.PunisherName)
+						: Localizer.ForPlayer(checker, "k4.general.admin");
 
-					_moduleServices?.PrintForPlayer(checker, Localizer[activeKey, adminName, duration], false);
+					_moduleServices?.PrintForPlayer(checker, Localizer.ForPlayer(checker, activeKey, adminName, duration), false);
 				}
 			}
 			else
 			{
-				_moduleServices?.PrintForPlayer(checker, Localizer[inactiveKey], false);
+				_moduleServices?.PrintForPlayer(checker, Localizer.ForPlayer(checker, inactiveKey), false);
 			}
 		}
 
-		private string GetPunishmentDuration(Punishment punishment)
+		private string GetPunishmentDuration(CCSPlayerController checker, Punishment punishment)
 		{
 			if (!punishment.ExpiresAt.HasValue)
-				return Localizer["k4.general.permanent"];
+				return Localizer.ForPlayer(checker, "k4.general.permanent");
 
 			var timeLeft = punishment.ExpiresAt.Value.GetDateTime() - DateTime.Now;
 
 			if (timeLeft <= TimeSpan.Zero)
-				return "0 " + Localizer["k4.general.minutes"];
+				return "0 " + Localizer.ForPlayer(checker, "k4.general.minutes");
 
-			return $"{Math.Ceiling(timeLeft.TotalMinutes)} {Localizer["k4.general.minutes"]}";
+			return $"{Math.Ceiling(timeLeft.TotalMinutes)} {Localizer.ForPlayer(checker, "k4.general.minutes")}";
 		}
 
 		public void AddDisconnectedPlayer(DisconnectedPlayer player)
@@ -849,20 +848,20 @@ namespace Zenith_Bans
 
 				Server.NextWorldUpdate(() =>
 				{
-					_moduleServices?.PrintForPlayer(checker, Localizer["k4.warncheck.header", target.PlayerName, warnings.Count]);
+					_moduleServices?.PrintForPlayer(checker, Localizer.ForPlayer(checker, "k4.warncheck.header", target.PlayerName, warnings.Count));
 
 					if (warnings.Count > 0)
 					{
 						for (int i = 0; i < warnings.Count; i++)
 						{
 							var warning = warnings[i];
-							string adminName = string.IsNullOrEmpty(warning.PunisherName) ? Localizer["k4.general.console"] : warning.PunisherName;
-							_moduleServices?.PrintForPlayer(checker, Localizer["k4.warncheck.warn", i + 1, adminName, warning.Reason], false);
+							string adminName = string.IsNullOrEmpty(warning.PunisherName) ? Localizer.ForPlayer(checker, "k4.general.console") : warning.PunisherName;
+							_moduleServices?.PrintForPlayer(checker, Localizer.ForPlayer(checker, "k4.warncheck.warn", i + 1, adminName, warning.Reason), false);
 						}
 					}
 					else
 					{
-						_moduleServices?.PrintForPlayer(checker, Localizer["k4.warncheck.no-warns"], false);
+						_moduleServices?.PrintForPlayer(checker, Localizer.ForPlayer(checker, "k4.warncheck.no-warns"), false);
 					}
 				});
 			});
@@ -999,8 +998,6 @@ namespace Zenith_Bans
 			string callerName = controller?.PlayerName ?? Localizer["k4.general.console"];
 			ulong targetSteamId = target.SteamID;
 
-			Logger.LogError($"Removing admin {target.PlayerName} ({targetSteamId})");
-
 			_ = Task.Run(async () =>
 			{
 				await RemoveAdminAsync(targetSteamId);
@@ -1068,22 +1065,22 @@ namespace Zenith_Bans
 			int commsBlockCount = playerData.Punishments.Count(p => p.Type == PunishmentType.Mute || p.Type == PunishmentType.Gag || p.Type == PunishmentType.Silence);
 			int warnCount = playerData.Punishments.Count(p => p.Type == PunishmentType.Warn);
 
-			_moduleServices?.PrintForPlayer(admin, Localizer["k4.punishment_summary.header", player.PlayerName], false);
+			_moduleServices?.PrintForPlayer(admin, Localizer.ForPlayer(admin, "k4.punishment_summary.header", player.PlayerName), false);
 
 			if (banCount > 0 || commsBlockCount > 0 || warnCount > 0)
 			{
 				if (banCount > 0)
-					_moduleServices?.PrintForPlayer(admin, Localizer["k4.punishment_summary.bans", banCount], false);
+					_moduleServices?.PrintForPlayer(admin, Localizer.ForPlayer(admin, "k4.punishment_summary.bans", banCount), false);
 
 				if (commsBlockCount > 0)
-					_moduleServices?.PrintForPlayer(admin, Localizer["k4.punishment_summary.comms_blocks", commsBlockCount], false);
+					_moduleServices?.PrintForPlayer(admin, Localizer.ForPlayer(admin, "k4.punishment_summary.comms_blocks", commsBlockCount), false);
 
 				if (warnCount > 0)
-					_moduleServices?.PrintForPlayer(admin, Localizer["k4.punishment_summary.warns", warnCount], false);
+					_moduleServices?.PrintForPlayer(admin, Localizer.ForPlayer(admin, "k4.punishment_summary.warns", warnCount), false);
 			}
 			else
 			{
-				_moduleServices?.PrintForPlayer(admin, Localizer["k4.punishment_summary.clean"], false);
+				_moduleServices?.PrintForPlayer(admin, Localizer.ForPlayer(admin, "k4.punishment_summary.clean"), false);
 			}
 		}
 
@@ -1140,7 +1137,7 @@ namespace Zenith_Bans
 			}
 
 			int countdown = delay;
-			player.PrintToCenterAlert(Localizer[kick ? "k4.alert.kick" : "k4.alert.ban", countdown, stringReason]);
+			player.PrintToCenterAlert(Localizer.ForPlayer(player, kick ? "k4.alert.kick" : "k4.alert.ban", countdown, stringReason));
 
 			_disconnectTImers[player] = AddTimer(1.0f, () =>
 			{
@@ -1148,7 +1145,7 @@ namespace Zenith_Bans
 
 				if (player.IsValid)
 				{
-					player.PrintToCenterAlert(Localizer[kick ? "k4.alert.kick" : "k4.alert.ban", countdown, stringReason]);
+					player.PrintToCenterAlert(Localizer.ForPlayer(player, kick ? "k4.alert.kick" : "k4.alert.ban", countdown, stringReason));
 
 					if (countdown <= 0)
 					{

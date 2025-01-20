@@ -14,7 +14,7 @@ public sealed partial class Plugin : BasePlugin
 
 	public override string ModuleName => $"K4-Zenith | {MODULE_ID}";
 	public override string ModuleAuthor => "K4ryuu @ KitsuneLab";
-	public override string ModuleVersion => "1.0.5";
+	public override string ModuleVersion => "1.0.6";
 
 	private IModuleConfigAccessor _coreAccessor = null!;
 

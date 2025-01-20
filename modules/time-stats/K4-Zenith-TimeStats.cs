@@ -7,20 +7,19 @@ using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Logging;
 using ZenithAPI;
 using CounterStrikeSharp.API.Modules.Timers;
+using CounterStrikeSharp.API.Core.Translations;
 
 namespace Zenith_TimeStats;
 
 [MinimumApiVersion(260)]
 public class Plugin : BasePlugin
 {
-
-
 	private IModuleConfigAccessor _coreAccessor = null!;
 	private const string MODULE_ID = "TimeStats";
 
 	public override string ModuleName => $"K4-Zenith | {MODULE_ID}";
 	public override string ModuleAuthor => "K4ryuu @ KitsuneLab";
-	public override string ModuleVersion => "1.0.7";
+	public override string ModuleVersion => "1.0.8";
 
 	private PlayerCapability<IPlayerServices>? _playerServicesCapability;
 	private PluginCapability<IModuleServices>? _moduleServicesCapability;
@@ -67,6 +66,7 @@ public class Plugin : BasePlugin
 
 		_moduleServices.RegisterModuleStorage(new Dictionary<string, object?>
 		{
+			{ "TotalPlaytime", 0.0 },
 			{ "TerroristPlaytime", 0.0 },
 			{ "CounterTerroristPlaytime", 0.0 },
 			{ "SpectatorPlaytime", 0.0 },
@@ -211,28 +211,25 @@ public class Plugin : BasePlugin
 		}
 	}
 
-
 	private static void UpdatePlaytime(PlayerTimeData data)
 	{
 		long currentTime = DateTimeOffset.Now.ToUnixTimeSeconds();
-		double sessionDurationMinutes = Math.Round((currentTime - data.LastUpdateTime) / 60.0, 1);
-		string currentDate = DateTime.Now.ToString("yyyy-MM-dd");
+		double sessionDurationMinutes = Math.Round((currentTime - data.LastUpdateTime) / 60.0, 2);
 
+		string currentDate = DateTime.Now.ToString("yyyy-MM-dd");
 		string? lastPlayDate = data.Zenith.GetStorage<string>("LastPlayDate");
+
 		if (lastPlayDate != currentDate)
 		{
 			data.Zenith.SetStorage("TodayPlaytime", 0.0);
 			data.Zenith.SetStorage("LastPlayDate", currentDate);
 		}
 
-		double todayPlaytime = data.Zenith.GetStorage<double>("TodayPlaytime");
-		todayPlaytime += sessionDurationMinutes;
+		double todayPlaytime = Math.Round(data.Zenith.GetStorage<double>("TodayPlaytime") + sessionDurationMinutes, 2);
 		data.Zenith.SetStorage("TodayPlaytime", todayPlaytime);
 
-		double totalPlaytime = data.Zenith.GetStorage<double>("TotalPlaytime");
-		totalPlaytime += sessionDurationMinutes;
+		double totalPlaytime = Math.Round(data.Zenith.GetStorage<double>("TotalPlaytime") + sessionDurationMinutes, 2);
 		data.Zenith.SetStorage("TotalPlaytime", totalPlaytime);
-
 
 		string teamKey = data.CurrentTeam switch
 		{
@@ -240,13 +237,12 @@ public class Plugin : BasePlugin
 			CsTeam.CounterTerrorist => "CounterTerroristPlaytime",
 			_ => "SpectatorPlaytime"
 		};
-		double teamPlaytime = data.Zenith.GetStorage<double>(teamKey);
-		teamPlaytime += sessionDurationMinutes;
+
+		double teamPlaytime = Math.Round(data.Zenith.GetStorage<double>(teamKey) + sessionDurationMinutes, 2);
 		data.Zenith.SetStorage(teamKey, teamPlaytime);
 
 		string lifeStatusKey = data.IsAlive ? "AlivePlaytime" : "DeadPlaytime";
-		double lifeStatusPlaytime = data.Zenith.GetStorage<double>(lifeStatusKey);
-		lifeStatusPlaytime += sessionDurationMinutes;
+		double lifeStatusPlaytime = Math.Round(data.Zenith.GetStorage<double>(lifeStatusKey) + sessionDurationMinutes, 2);
 		data.Zenith.SetStorage(lifeStatusKey, lifeStatusPlaytime);
 		if (data.ModuleServices.IsModuleEnabled("Kewaii-Zenith-AFKManager")) {
 			if (data.Zenith.IsAFK) {
@@ -281,9 +277,9 @@ public class Plugin : BasePlugin
 	private void SendPlaytimeNotification(IPlayerServices playerServices)
 	{
 		double totalPlaytime = playerServices.GetStorage<double>("TotalPlaytime");
-		string formattedTime = FormatTime(totalPlaytime);
+		string formattedTime = FormatTime(playerServices.Controller, totalPlaytime);
 
-		string message = Localizer["timestats.notification", formattedTime];
+		string message = Localizer.ForPlayer(playerServices.Controller, "timestats.notification", formattedTime);
 
 		playerServices.Print(message);
 	}
@@ -306,15 +302,15 @@ public class Plugin : BasePlugin
 		if (_coreAccessor.GetValue<bool>("Core", "CenterMenuMode"))
 		{
 			string htmlMessage = $@"
-			<font color='#ff3333' class='fontSize-m'>{Localizer["timestats.today.title"]}</font><br>
-			<font color='#FFFFFF' class='fontSize-sm'>{FormatTime(todayPlaytime)}</font>";
+			<font color='#ff3333' class='fontSize-m'>{Localizer.ForPlayer(playerServices.Controller, "timestats.today.title")}</font><br>
+			<font color='#FFFFFF' class='fontSize-sm'>{FormatTime(playerServices.Controller, todayPlaytime)}</font>";
 
 			playerServices.PrintToCenter(htmlMessage, _coreAccessor.GetValue<int>("Core", "CenterMessageTime"), ActionPriority.Low);
 		}
 		else
 		{
-			playerServices.Print(Localizer["timestats.today.chat.title", playerServices.Controller.PlayerName]);
-			playerServices.Print(Localizer["timestats.today.chat.playtime", FormatTime(todayPlaytime)]);
+			playerServices.Print(Localizer.ForPlayer(playerServices.Controller, "timestats.today.chat.title", playerServices.Controller.PlayerName));
+			playerServices.Print(Localizer.ForPlayer(playerServices.Controller, "timestats.today.chat.playtime", FormatTime(playerServices.Controller, todayPlaytime)));
 		}
 	}
 
@@ -332,7 +328,6 @@ public class Plugin : BasePlugin
 	private void SendDetailedPlaytimeStats(IPlayerServices playerServices)
 	{
 		double totalPlaytime = playerServices.GetStorage<double>("TotalPlaytime");
-		
 		double nonAFKPlaytime = playerServices.GetStorage<double>("NonAFKPlaytime", "Kewaii-Zenith-AFKManager");
 		double afkPlaytime = playerServices.GetStorage<double>("AFKPlaytime", "Kewaii-Zenith-AFKManager");
 		double terroristPlaytime = playerServices.GetStorage<double>("TerroristPlaytime");
@@ -344,46 +339,46 @@ public class Plugin : BasePlugin
 		if (_coreAccessor.GetValue<bool>("Core", "CenterMenuMode"))
 		{
 			string htmlMessage = $@"
-        <font color='#ff3333' class='fontSize-m'>{Localizer["timestats.center.title"]}</font><br>
-        <font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.total.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(totalPlaytime)}</font><br>
-        <font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.teams.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{Localizer["timestats.center.teams.value", FormatTime(terroristPlaytime), FormatTime(ctPlaytime)]}</font><br>
-        <font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.spectator.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(spectatorPlaytime)}</font><br>
-        <font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.status.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{Localizer["timestats.center.status.value", FormatTime(alivePlaytime), FormatTime(deadPlaytime)]}</font>";
+        <font color='#ff3333' class='fontSize-m'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.title")}</font><br>
+        <font color='#FF6666' class='fontSize-sm'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.total.label")}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(playerServices.Controller, totalPlaytime)}</font><br>
+        <font color='#FF6666' class='fontSize-sm'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.teams.label")}</font> <font color='#FFFFFF' class='fontSize-s'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.teams.value", FormatTime(playerServices.Controller, terroristPlaytime), FormatTime(playerServices.Controller, ctPlaytime))}</font><br>
+        <font color='#FF6666' class='fontSize-sm'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.spectator.label")}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(playerServices.Controller, spectatorPlaytime)}</font><br>
+        <font color='#FF6666' class='fontSize-sm'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.status.label")}</font> <font color='#FFFFFF' class='fontSize-s'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.status.value", FormatTime(playerServices.Controller, alivePlaytime), FormatTime(playerServices.Controller, deadPlaytime))}</font>";
 
 			if (_moduleServices is not null && _moduleServices.IsModuleEnabled("Kewaii-Zenith-AFKManager")) {
 				htmlMessage = $@"
-        <font color='#ff3333' class='fontSize-m'>{Localizer["timestats.center.title"]}</font><br>
-        <font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.total.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(totalPlaytime)}</font><br>
-        <font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.teams.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{Localizer["timestats.center.teams.value", FormatTime(terroristPlaytime), FormatTime(ctPlaytime)]}</font><br>
-        <font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.spectator.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(spectatorPlaytime)}</font><br>
-		<font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.afk.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(afkPlaytime)}</font><br>
-		<font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.nonafk.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(nonAFKPlaytime)}</font><br>
-        <font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.status.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{Localizer["timestats.center.status.value", FormatTime(alivePlaytime), FormatTime(deadPlaytime)]}</font>";
+        <font color='#ff3333' class='fontSize-m'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.title")}</font><br>
+        <font color='#FF6666' class='fontSize-sm'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.total.label")}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(playerServices.Controller, totalPlaytime)}</font><br>
+        <font color='#FF6666' class='fontSize-sm'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.teams.label")}</font> <font color='#FFFFFF' class='fontSize-s'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.teams.value", FormatTime(playerServices.Controller, terroristPlaytime), FormatTime(playerServices.Controller, ctPlaytime))}</font><br>
+        <font color='#FF6666' class='fontSize-sm'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.spectator.label")}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(playerServices.Controller, spectatorPlaytime)}</font><br>
+		<font color='#FF6666' class='fontSize-sm'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.afk.label")}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(playerServices.Controller, afkPlaytime)}</font><br>
+		<font color='#FF6666' class='fontSize-sm'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.nonafk.label")}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(playerServices.Controller, nonAFKPlaytime)}</font><br>
+        <font color='#FF6666' class='fontSize-sm'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.status.label")}</font> <font color='#FFFFFF' class='fontSize-s'>{Localizer.ForPlayer(playerServices.Controller, "timestats.center.status.value", FormatTime(playerServices.Controller, alivePlaytime), FormatTime(playerServices.Controller, deadPlaytime))}</font>";
 			}
 			playerServices.PrintToCenter(htmlMessage, _coreAccessor.GetValue<int>("Core", "CenterMessageTime"), ActionPriority.Low);
 		}
 		else
 		{
-			playerServices.Print(Localizer["timestats.chat.title", playerServices.Controller.PlayerName]);
-			playerServices.Print(Localizer["timestats.chat.total", FormatTime(totalPlaytime)]);
-			playerServices.Print(Localizer["timestats.chat.teams", FormatTime(terroristPlaytime), FormatTime(ctPlaytime)]);
-			playerServices.Print(Localizer["timestats.chat.spectator", FormatTime(spectatorPlaytime)]);
+			playerServices.Print(Localizer.ForPlayer(playerServices.Controller, "timestats.chat.title", playerServices.Controller.PlayerName));
+			playerServices.Print(Localizer.ForPlayer(playerServices.Controller, "timestats.chat.total", FormatTime(playerServices.Controller, totalPlaytime)));
+			playerServices.Print(Localizer.ForPlayer(playerServices.Controller, "timestats.chat.teams", FormatTime(playerServices.Controller, terroristPlaytime), FormatTime(playerServices.Controller, ctPlaytime)));
+			playerServices.Print(Localizer.ForPlayer(playerServices.Controller, "timestats.chat.spectator", FormatTime(playerServices.Controller, spectatorPlaytime)));
 			if (_moduleServices is not null && _moduleServices.IsModuleEnabled("Kewaii-Zenith-AFKManager")) {
-				playerServices.Print(Localizer["timestats.chat.afk", FormatTime(afkPlaytime)]);
-				playerServices.Print(Localizer["timestats.chat.nonafk", FormatTime(nonAFKPlaytime)]);
-			}
-			playerServices.Print(Localizer["timestats.chat.status", FormatTime(alivePlaytime), FormatTime(deadPlaytime)]);
+                playerServices.Print(Localizer.ForPlayer(playerServices.Controller, "timestats.chat.afk", FormatTime(playerServices.Controller,afkPlaytime)));
+                playerServices.Print(Localizer.ForPlayer(playerServices.Controller, "timestats.chat.nonafk", FormatTime(playerServices.Controller,nonAFKPlaytime));
+            }
+			playerServices.Print(Localizer.ForPlayer(playerServices.Controller, "timestats.chat.status", FormatTime(playerServices.Controller, alivePlaytime), FormatTime(playerServices.Controller, deadPlaytime)));
 		}
 	}
 
-	private string FormatTime(double minutes)
+	private string FormatTime(CCSPlayerController player, double minutes)
 	{
 		int totalMinutes = (int)Math.Floor(minutes);
 		int days = totalMinutes / 1440;
 		int hours = (totalMinutes % 1440) / 60;
 		int mins = totalMinutes % 60;
 
-		return Localizer["timestats.time.format", days, hours, mins];
+		return Localizer.ForPlayer(player, "timestats.time.format", days, hours, mins);
 	}
 
 	public override void Unload(bool hotReload)

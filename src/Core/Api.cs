@@ -4,6 +4,7 @@ namespace Zenith
 	using System.Reflection;
 	using CounterStrikeSharp.API.Core;
 	using CounterStrikeSharp.API.Core.Capabilities;
+	using CounterStrikeSharp.API.Core.Translations;
 	using CounterStrikeSharp.API.Modules.Commands;
 	using CounterStrikeSharp.API.Modules.Utils;
 	using Microsoft.Extensions.Localization;
@@ -180,7 +181,7 @@ namespace Zenith
 				if (player == null)
 				{
 					Console.ForegroundColor = ConsoleColor.DarkYellow;
-					Console.WriteLine($"{RemoveColorChars(_plugin.Localizer["k4.general.prefix"])}{message}");
+					Console.WriteLine($"{RemoveColorChars(_plugin.Localizer.ForPlayer(player, "k4.general.prefix"))}{message}");
 					Console.ResetColor();
 					return;
 				}

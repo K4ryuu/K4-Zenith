@@ -22,6 +22,7 @@ namespace Zenith
 
 				anyMigrationPerformed |= await MigrateRanksData(connection);
 				anyMigrationPerformed |= await MigrateTimesData(connection);
+				anyMigrationPerformed |= await MigrateAFKManagerData(connection);
 				anyMigrationPerformed |= await MigrateStatsData(connection);
 
 				await MigrateLvlBaseData(connection);
@@ -197,6 +198,51 @@ namespace Zenith
 					`K4-Zenith-TimeStats.storage` = IF(`K4-Zenith-TimeStats.storage` IS NULL,
 						VALUES(`K4-Zenith-TimeStats.storage`),
 						`K4-Zenith-TimeStats.storage`)";
+
+			var affectedRows = await connection.ExecuteAsync(migrateQuery);
+
+			if (affectedRows > 0)
+			{
+				Logger.LogInformation($"Migrated {affectedRows} rows from k4times table.");
+				return true;
+			}
+			return false;
+		}
+
+
+		private async Task<bool> MigrateAFKManagerData(MySqlConnection connection)
+		{
+			var oldTableExists = await connection.ExecuteScalarAsync<bool>(
+				$"SELECT COUNT(*) FROM information_schema.tables WHERE table_schema = DATABASE() AND table_name = 'k4times'");
+
+			if (!oldTableExists) return false;
+
+			Logger.LogInformation("Found old k4times table. Starting data migration.");
+
+			var columnExists = await connection.ExecuteScalarAsync<bool>(
+				$"SELECT COUNT(*) FROM information_schema.columns WHERE table_schema = DATABASE() AND table_name = '{Models.Player.TABLE_PLAYER_STORAGE}' AND column_name = 'K4-Zenith-TimeStats.storage'");
+
+			if (!columnExists)
+			{
+				await connection.ExecuteAsync(
+					$"ALTER TABLE `{Models.Player.TABLE_PLAYER_STORAGE}` ADD COLUMN `K4-Zenith-AFKManager.storage` JSON NULL");
+			}
+
+			var migrateQuery = $@"
+				INSERT INTO `{Models.Player.TABLE_PLAYER_STORAGE}` (`steam_id`, `last_online`, `K4-Zenith-AFKManager.storage`)
+				SELECT
+					t.`steam_id`,
+					t.`lastseen`,
+					JSON_OBJECT(
+						'AFKPlaytime', ROUND(t.`afk` / 60, 1),
+						'NonAFKPlaytime', ROUND(t.`nonafk` / 60, 1)
+					)
+				FROM
+					`k4times` t
+				ON DUPLICATE KEY UPDATE
+					`K4-Zenith-AFKManager.storage` = IF(`K4-Zenith-AFKManager.storage` IS NULL,
+						VALUES(`K4-Zenith-AFKManager.storage`),
+						`K4-Zenith-AFKManager.storage`)";
 
 			var affectedRows = await connection.ExecuteAsync(migrateQuery);
 

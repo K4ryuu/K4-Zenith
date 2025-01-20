@@ -1,6 +1,7 @@
 
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands.Targeting;
 using CounterStrikeSharp.API.Modules.Cvars;
@@ -14,19 +15,19 @@ public sealed partial class Plugin : BasePlugin
 	{
 		if (!AdminManager.CanPlayerTarget(caller, target))
 		{
-			_moduleServices?.PrintForPlayer(caller, Localizer["commands.error.invalid_immunity", target.PlayerName]);
+			_moduleServices?.PrintForPlayer(caller, Localizer.ForPlayer(caller, "commands.error.invalid_immunity", target.PlayerName));
 			return;
 		}
 
 		if (aliveState == true && (target.PlayerPawn.Value == null || target.PlayerPawn.Value.LifeState != (byte)LifeState_t.LIFE_ALIVE))
 		{
-			_moduleServices?.PrintForPlayer(caller, Localizer["commands.error.invalid_dead", target.PlayerName]);
+			_moduleServices?.PrintForPlayer(caller, Localizer.ForPlayer(caller, "commands.error.invalid_dead", target.PlayerName));
 			return;
 		}
 
 		if (aliveState == false && (target.PlayerPawn.Value == null || target.PlayerPawn.Value.LifeState == (byte)LifeState_t.LIFE_ALIVE))
 		{
-			_moduleServices?.PrintForPlayer(caller, Localizer["commands.error.invalid_alive", target.PlayerName]);
+			_moduleServices?.PrintForPlayer(caller, Localizer.ForPlayer(caller, "commands.error.invalid_alive", target.PlayerName));
 			return;
 		}
 
@@ -37,7 +38,7 @@ public sealed partial class Plugin : BasePlugin
 	{
 		if (!targetResult.Any())
 		{
-			_moduleServices?.PrintForPlayer(caller, Localizer["commands.error.invalid_target"]);
+			_moduleServices?.PrintForPlayer(caller, Localizer.ForPlayer(caller, "commands.error.invalid_target"));
 			return;
 		}
 
@@ -129,14 +130,14 @@ public sealed partial class Plugin : BasePlugin
 
 			if (ShouldShowActivity(callerSteamId, player, true))
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer[localizerKey, args]);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, localizerKey, args));
 			}
 			else if (ShouldShowActivity(callerSteamId, player, false))
 			{
 				var anonymousArgs = new object[args.Length];
 				Array.Copy(args, anonymousArgs, args.Length);
-				anonymousArgs[0] = Localizer["k4.general.admin"];
-				_moduleServices?.PrintForPlayer(player, Localizer[localizerKey, anonymousArgs]);
+				anonymousArgs[0] = Localizer.ForPlayer(player, "k4.general.admin");
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, localizerKey, anonymousArgs));
 			}
 		}
 	}

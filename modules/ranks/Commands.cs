@@ -1,6 +1,7 @@
 
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Commands.Targeting;
 using CounterStrikeSharp.API.Modules.Menu;
@@ -19,7 +20,7 @@ public sealed partial class Plugin : BasePlugin
 		if (player == null) return;
 		if (!_playerCache.TryGetValue(player!, out var playerServices))
 		{
-			info.ReplyToCommand($" {Localizer["k4.general.prefix"]} {Localizer["k4.general.loading"]}");
+			info.ReplyToCommand($" {Localizer.ForPlayer(player, "k4.general.prefix")} {Localizer.ForPlayer(player, "k4.general.loading")}");
 			return;
 		}
 		if (_coreAccessor.GetValue<bool>("Core", "CenterMenuMode"))
@@ -38,10 +39,10 @@ public sealed partial class Plugin : BasePlugin
 		foreach (var rank in Ranks)
 		{
 			string formattedPoints = FormatPoints(rank.Point);
-			string rankInfo = $"<font color='{rank.HexColor}'>{rank.Name}</font>: {formattedPoints} {Localizer["k4.ranks.points"]}";
+			string rankInfo = $"<font color='{rank.HexColor}'>{rank.Name}</font>: {formattedPoints} {Localizer.ForPlayer(player.Controller, "k4.ranks.points")}";
 			items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(rankInfo)]));
 		}
-		Menu.ShowScrollableMenu(player.Controller, Localizer["k4.ranks.list.title"], items, (buttons, menu, selected) =>
+		Menu.ShowScrollableMenu(player.Controller, Localizer.ForPlayer(player.Controller, "k4.ranks.list.title"), items, (buttons, menu, selected) =>
 		{
 			// No action needed when an item is selected, as we're just displaying information
 			// Can be extended later if needed
@@ -50,11 +51,11 @@ public sealed partial class Plugin : BasePlugin
 
 	private void ShowChatRanksList(IPlayerServices player)
 	{
-		ChatMenu menu = new ChatMenu(Localizer["k4.ranks.list.title"]);
+		ChatMenu menu = new ChatMenu(Localizer.ForPlayer(player.Controller, "k4.ranks.list.title"));
 		foreach (var rank in Ranks)
 		{
 			string formattedPoints = FormatPoints(rank.Point);
-			string rankInfo = $"{rank.ChatColor}{rank.Name}{ChatColors.Default}: {formattedPoints} {Localizer["k4.ranks.points"]}";
+			string rankInfo = $"{rank.ChatColor}{rank.Name}{ChatColors.Default}: {formattedPoints} {Localizer.ForPlayer(player.Controller, "k4.ranks.points")}";
 			menu.AddMenuOption(rankInfo, (p, o) => { });
 		}
 		MenuManager.OpenChatMenu(player.Controller, menu);
@@ -64,7 +65,7 @@ public sealed partial class Plugin : BasePlugin
 	{
 		if (!_playerCache.TryGetValue(player!, out var playerServices))
 		{
-			info.ReplyToCommand($" {Localizer["k4.general.prefix"]} {Localizer["k4.general.loading"]}");
+			info.ReplyToCommand($" {Localizer.ForPlayer(player, "k4.general.prefix")} {Localizer.ForPlayer(player, "k4.general.loading")}");
 			return;
 		}
 
@@ -75,25 +76,25 @@ public sealed partial class Plugin : BasePlugin
 		if (_coreAccessor.GetValue<bool>("Core", "CenterMenuMode"))
 		{
 			string htmlMessage = $@"
-				<font color='#ff3333' class='fontSize-m'>{Localizer["k4.ranks.info.title"]}</font><br>
-				<font color='#FF6666' class='fontSize-sm'>{Localizer["k4.ranks.info.current"]}</font> <font color='{playerData.Rank?.HexColor ?? "#FFFFFF"}' class='fontSize-s'>{playerData.Rank?.Name ?? Localizer["k4.phrases.rank.none"]}</font><br>
-				<font color='#FF6666' class='fontSize-sm'>{Localizer["k4.ranks.info.points"]}</font> <font color='#FFFFFF' class='fontSize-s'>{playerData.Points:N0}</font>";
+				<font color='#ff3333' class='fontSize-m'>{Localizer.ForPlayer(player, "k4.ranks.info.title")}</font><br>
+				<font color='#FF6666' class='fontSize-sm'>{Localizer.ForPlayer(player, "k4.ranks.info.current")}</font> <font color='{playerData.Rank?.HexColor ?? "#FFFFFF"}' class='fontSize-s'>{playerData.Rank?.Name ?? Localizer.ForPlayer(player, "k4.phrases.rank.none")}</font><br>
+				<font color='#FF6666' class='fontSize-sm'>{Localizer.ForPlayer(player, "k4.ranks.info.points")}</font> <font color='#FFFFFF' class='fontSize-s'>{playerData.Points:N0}</font>";
 
 			if (playerData.NextRank != null)
 			{
 				htmlMessage += $@"
-					<br><font color='#FF6666' class='fontSize-sm'>{Localizer["k4.ranks.info.next"]}</font> <font color='{playerData.NextRank.HexColor}' class='fontSize-s'>{playerData.NextRank.Name}</font><br>
-					<font color='#FF6666' class='fontSize-sm'>{Localizer["k4.ranks.info.pointstonext"]}</font> <font color='#FFFFFF' class='fontSize-s'>{pointsToNextRank:N0}</font>";
+					<br><font color='#FF6666' class='fontSize-sm'>{Localizer.ForPlayer(player, "k4.ranks.info.next")}</font> <font color='{playerData.NextRank.HexColor}' class='fontSize-s'>{playerData.NextRank.Name}</font><br>
+					<font color='#FF6666' class='fontSize-sm'>{Localizer.ForPlayer(player, "k4.ranks.info.pointstonext")}</font> <font color='#FFFFFF' class='fontSize-s'>{pointsToNextRank:N0}</font>";
 			}
 
 			playerServices.PrintToCenter(htmlMessage, _configAccessor.GetValue<int>("Core", "CenterMessageTime"), ActionPriority.Low);
 		}
 		else
 		{
-			playerServices.Print(Localizer["k4.phrases.rank.title", player?.PlayerName ?? "Unknown"]);
-			playerServices.Print(Localizer["k4.phrases.rank.line1", playerData.Rank?.ChatColor ?? ChatColors.Grey.ToString(), playerData.Rank?.Name ?? Localizer["k4.phrases.rank.none"], $"{playerData.Points:N0}"]);
+			playerServices.Print(Localizer.ForPlayer(player, "k4.phrases.rank.title", player?.PlayerName ?? "Unknown"));
+			playerServices.Print(Localizer.ForPlayer(player, "k4.phrases.rank.line1", playerData.Rank?.ChatColor ?? ChatColors.Grey.ToString(), playerData.Rank?.Name ?? Localizer.ForPlayer(player, "k4.phrases.rank.none"), $"{playerData.Points:N0}"));
 			if (playerData.NextRank != null)
-				playerServices.Print(Localizer["k4.phrases.rank.line2", playerData.NextRank.ChatColor ?? ChatColors.Grey.ToString(), playerData.NextRank.Name, $"{pointsToNextRank:N0}"]);
+				playerServices.Print(Localizer.ForPlayer(player, "k4.phrases.rank.line2", playerData.NextRank.ChatColor ?? ChatColors.Grey.ToString(), playerData.NextRank.Name, $"{pointsToNextRank:N0}"));
 		}
 	}
 
@@ -102,7 +103,7 @@ public sealed partial class Plugin : BasePlugin
 		TargetResult targets = info.GetArgTargetResult(1);
 		if (!targets.Any())
 		{
-			_moduleServices?.PrintForPlayer(player, Localizer["k4.phrases.no-target"]);
+			_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "k4.phrases.no-target"));
 			return;
 		}
 
@@ -111,7 +112,7 @@ public sealed partial class Plugin : BasePlugin
 		{
 			if (!int.TryParse(info.GetArg(2), out int parsedAmount) || parsedAmount <= 0)
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer["k4.phrases.invalid-amount"]);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "k4.phrases.invalid-amount"));
 				return;
 			}
 			amount = parsedAmount;
@@ -131,7 +132,7 @@ public sealed partial class Plugin : BasePlugin
 			}
 			else
 			{
-				_moduleServices?.PrintForPlayer(player, Localizer["k4.phrases.cant-target", target.PlayerName]);
+				_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "k4.phrases.cant-target", target.PlayerName));
 			}
 		}
 	}
@@ -150,7 +151,7 @@ public sealed partial class Plugin : BasePlugin
 				UpdatePlayerRank(zenithPlayer, playerData, newAmount);
 
 				return (
-					Localizer["k4.phrases.points-given", player?.PlayerName ?? "CONSOLE", amount],
+					Localizer.ForPlayer(player, "k4.phrases.points-given", player?.PlayerName ?? "CONSOLE", amount),
 					"{0} ({1}) gave {2} ({3}) {4} rank points."
 				);
 			}
@@ -171,7 +172,7 @@ public sealed partial class Plugin : BasePlugin
 				UpdatePlayerRank(zenithPlayer, playerData, newAmount);
 
 				return (
-					Localizer["k4.phrases.points-taken", player?.PlayerName ?? "CONSOLE", amount],
+					Localizer.ForPlayer(player, "k4.phrases.points-taken", player?.PlayerName ?? "CONSOLE", amount),
 					"{0} ({1}) taken {4} rank points from {2} ({3})."
 				);
 			}
@@ -191,7 +192,7 @@ public sealed partial class Plugin : BasePlugin
 				UpdatePlayerRank(zenithPlayer, playerData, amount!.Value);
 
 				return (
-					Localizer["k4.phrases.points-set", player?.PlayerName ?? "CONSOLE", amount],
+					Localizer.ForPlayer(player, "k4.phrases.points-set", player?.PlayerName ?? "CONSOLE", amount),
 					"{0} ({1}) set {2} ({3}) rank points to {4}."
 				);
 			}
@@ -236,7 +237,7 @@ public sealed partial class Plugin : BasePlugin
 				UpdatePlayerRank(zenithPlayer, playerData, startPoints);
 
 				return (
-					Localizer["k4.phrases.points-reset", player?.PlayerName ?? "CONSOLE"],
+					Localizer.ForPlayer(player, "k4.phrases.points-reset", player?.PlayerName ?? "CONSOLE"),
 					"{0} ({1}) reset {2} ({3}) rank points to {4}."
 				);
 			},

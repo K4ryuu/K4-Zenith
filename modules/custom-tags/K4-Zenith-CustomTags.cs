@@ -12,6 +12,7 @@ using Menu;
 using Menu.Enums;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Utils;
+using CounterStrikeSharp.API.Core.Translations;
 
 namespace Zenith_CustomTags;
 
@@ -24,7 +25,7 @@ public class Plugin : BasePlugin
 
 	public override string ModuleName => $"K4-Zenith | {MODULE_ID}";
 	public override string ModuleAuthor => "K4ryuu @ KitsuneLab";
-	public override string ModuleVersion => "1.0.8";
+	public override string ModuleVersion => "1.0.9";
 
 	private PlayerCapability<IPlayerServices>? _playerServicesCapability;
 	private PluginCapability<IModuleServices>? _moduleServicesCapability;
@@ -141,12 +142,12 @@ public class Plugin : BasePlugin
 			}
 		}
 
-		items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(Localizer["customtags.menu.none"])]));
+		items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(Localizer.ForPlayer(player, "customtags.menu.none"))]));
 		configKeys.Add("none");
 
 		if (hasCustomConfig)
 		{
-			items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(Localizer["customtags.menu.default"])]));
+			items.Add(new MenuItem(MenuItemType.Button, [new MenuValue(Localizer.ForPlayer(player, "customtags.menu.default"))]));
 			configKeys.Add("default");
 		}
 
@@ -187,7 +188,7 @@ public class Plugin : BasePlugin
 			return;
 		}
 
-		Menu.ShowScrollableMenu(player, Localizer["customtags.menu.title"], items, (buttons, menu, selected) =>
+		Menu.ShowScrollableMenu(player, Localizer.ForPlayer(player, "customtags.menu.title"), items, (buttons, menu, selected) =>
 		{
 			if (selected == null) return;
 
@@ -205,7 +206,7 @@ public class Plugin : BasePlugin
 
 	private void ShowChatTagSelectionMenu(CCSPlayerController player, List<string> configKeys)
 	{
-		ChatMenu tagMenu = new ChatMenu(Localizer["customtags.menu.title"]);
+		ChatMenu tagMenu = new ChatMenu(Localizer.ForPlayer(player, "customtags.menu.title"));
 
 		foreach (var configKey in configKeys)
 		{
@@ -216,11 +217,11 @@ public class Plugin : BasePlugin
 			}
 			else if (configKey == "none")
 			{
-				displayName = Localizer["customtags.menu.none"];
+				displayName = Localizer.ForPlayer(player, "customtags.menu.none");
 			}
 			else if (configKey == "default")
 			{
-				displayName = Localizer["customtags.menu.default"];
+				displayName = Localizer.ForPlayer(player, "customtags.menu.default");
 			}
 
 			tagMenu.AddMenuOption($"{ChatColors.Gold}{displayName}", (p, o) =>
@@ -245,19 +246,19 @@ public class Plugin : BasePlugin
 		{
 			zenithPlayer.SetStorage("ChoosenTag", "Default");
 			ApplyTagConfig(player);
-			_moduleServices?.PrintForPlayer(player, Localizer["customtags.applied.default"]);
+			_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "customtags.applied.default"));
 		}
 		else if (selectedConfigKey == "none")
 		{
 			zenithPlayer.SetStorage("ChoosenTag", "None");
 			ApplyNullConfig(zenithPlayer);
-			_moduleServices?.PrintForPlayer(player, Localizer["customtags.applied.none"]);
+			_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "customtags.applied.none"));
 		}
 		else if (_predefinedConfigs?.TryGetValue(selectedConfigKey, out var selectedPredefinedConfig) == true)
 		{
 			zenithPlayer.SetStorage("ChoosenTag", selectedConfigKey);
 			ApplyConfig(zenithPlayer, selectedPredefinedConfig);
-			_moduleServices?.PrintForPlayer(player, Localizer["customtags.applied.config", selectedPredefinedConfig.Name]);
+			_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "customtags.applied.config", selectedPredefinedConfig.Name));
 		}
 		else
 		{
@@ -516,7 +517,7 @@ public class Plugin : BasePlugin
 					if (_predefinedConfigs.TryGetValue(configName, out var availablePredefinedConfig))
 					{
 						ApplyConfig(zenithPlayer, availablePredefinedConfig);
-						_moduleServices?.PrintForPlayer(player, Localizer["customtags.applied.default_predefined", availablePredefinedConfig.Name]);
+						_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, "customtags.applied.default_predefined", availablePredefinedConfig.Name));
 						zenithPlayer.SetStorage("ChoosenTag", configName);
 						configApplied = true;
 						break;

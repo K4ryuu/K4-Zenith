@@ -19,7 +19,7 @@ namespace Zenith
 		{
 			int entity = um.ReadInt("entityindex");
 			Player? player = Player.Find(Utilities.GetPlayerFromIndex(entity));
-			if (player == null || !player.IsValid)
+			if (player == null || !player.IsValid || player.Controller is null)
 				return HookResult.Continue;
 
 			if (player.IsGagged)
@@ -30,8 +30,8 @@ namespace Zenith
 
 			bool enabledChatModifier = player.GetSetting<bool>("ShowChatTags");
 
-			string dead = player.IsAlive ? string.Empty : Localizer["k4.tag.dead"];
-			string team = um.ReadString("messagename").Contains("All") ? Localizer["k4.tag.all"] : TeamLocalizer(player.Controller!.Team);
+			string dead = player.IsAlive ? string.Empty : Localizer.ForPlayer(player.Controller, "k4.tag.dead");
+			string team = um.ReadString("messagename").Contains("All") ? Localizer.ForPlayer(player.Controller, "k4.tag.all") : TeamLocalizer(player.Controller);
 			string tag = enabledChatModifier ? player.GetNameTag() : string.Empty;
 
 			char namecolor = enabledChatModifier ? player.GetNameColor() : ChatColors.ForTeam(player.Controller!.Team);
@@ -39,7 +39,7 @@ namespace Zenith
 
 			string message = um.ReadString("param2");
 
-			string formattedMessage = FormatMessage(player.Controller!, $" {dead}{team}{tag}{namecolor}{um.ReadString("param1")}{RemoveLeadingSpaceBeforeColorCode(Localizer["k4.tag.separator"])}{chatcolor}{message}");
+			string formattedMessage = FormatMessage(player.Controller!, $" {dead}{team}{tag}{namecolor}{um.ReadString("param1")}{RemoveLeadingSpaceBeforeColorCode(Localizer.ForPlayer(player.Controller, "k4.tag.separator"))}{chatcolor}{message}");
 
 			um.SetString("messagename", formattedMessage);
 
@@ -54,14 +54,14 @@ namespace Zenith
 				.Replace("{team}", ChatColors.ForPlayer(player).ToString());
 		}
 
-		private string TeamLocalizer(CsTeam team)
+		private string TeamLocalizer(CCSPlayerController player)
 		{
-			return team switch
+			return player.Team switch
 			{
-				CsTeam.Spectator => Localizer["k4.tag.team.spectator"],
-				CsTeam.Terrorist => Localizer["k4.tag.team.t"],
-				CsTeam.CounterTerrorist => Localizer["k4.tag.team.ct"],
-				_ => Localizer["k4.tag.team.unassigned"],
+				CsTeam.Spectator => Localizer.ForPlayer(player, "k4.tag.team.spectator"),
+				CsTeam.Terrorist => Localizer.ForPlayer(player, "k4.tag.team.t"),
+				CsTeam.CounterTerrorist => Localizer.ForPlayer(player, "k4.tag.team.ct"),
+				_ => Localizer.ForPlayer(player, "k4.tag.team.unassigned"),
 			};
 		}
 

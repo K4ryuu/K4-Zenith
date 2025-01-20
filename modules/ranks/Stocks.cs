@@ -1,5 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Admin;
 using ZenithAPI;
 
@@ -48,12 +49,6 @@ public sealed partial class Plugin : BasePlugin
 		playerData.Points = newPoints;
 		playerData.LastUpdate = DateTime.Now;
 
-		if (_playerRankCache.TryGetValue(player.SteamID, out var rankInfo))
-		{
-			rankInfo.Points = newPoints;
-			rankInfo.LastUpdate = DateTime.Now;
-		}
-
 		if (scoreboardSync && player.Controller.Score != (int)newPoints)
 		{
 			player.Controller.Score = (int)newPoints;
@@ -69,8 +64,8 @@ public sealed partial class Plugin : BasePlugin
 		}
 		else
 		{
-			string message = Localizer[points >= 0 ? "k4.phrases.gain" : "k4.phrases.loss",
-				$"{newPoints:N0}", Math.Abs(points), extraInfo ?? Localizer[eventKey]];
+			string message = Localizer.ForPlayer(player.Controller, points >= 0 ? "k4.phrases.gain" : "k4.phrases.loss",
+				$"{newPoints:N0}", Math.Abs(points), extraInfo ?? Localizer.ForPlayer(player.Controller, eventKey));
 			Server.NextFrame(() => player.Print(message));
 		}
 	}
@@ -81,7 +76,7 @@ public sealed partial class Plugin : BasePlugin
 
 		if (determinedRank?.Id != playerData.Rank?.Id)
 		{
-			string newRankName = determinedRank?.Name ?? Localizer["k4.phrases.rank.none"];
+			string newRankName = determinedRank?.Name ?? Localizer.ForPlayer(player.Controller, "k4.phrases.rank.none");
 			player.SetStorage("Rank", newRankName);
 
 			if (!GetCachedConfigValue<bool>("Settings", "ShowRankChanges"))
@@ -90,8 +85,8 @@ public sealed partial class Plugin : BasePlugin
 			bool isRankUp = playerData.Rank is null || CompareRanks(determinedRank, playerData.Rank) > 0;
 
 			string htmlMessage = $@"
-            <font color='{(isRankUp ? "#00FF00" : "#FF0000")}' class='fontSize-m'>{Localizer[isRankUp ? "k4.phrases.rankup" : "k4.phrases.rankdown"]}</font><br>
-            <font color='{determinedRank?.HexColor}' class='fontSize-m'>{Localizer["k4.phrases.newrank", newRankName]}</font>";
+            <font color='{(isRankUp ? "#00FF00" : "#FF0000")}' class='fontSize-m'>{Localizer.ForPlayer(player.Controller, isRankUp ? "k4.phrases.rankup" : "k4.phrases.rankdown")}</font><br>
+            <font color='{determinedRank?.HexColor}' class='fontSize-m'>{Localizer.ForPlayer(player.Controller, "k4.phrases.newrank", newRankName)}</font>";
 
 			player.PrintToCenter(htmlMessage, _configAccessor.GetValue<int>("Core", "CenterAlertTime"), ActionPriority.Normal);
 		}
@@ -109,19 +104,30 @@ public sealed partial class Plugin : BasePlugin
 
 	private PlayerRankInfo GetOrUpdatePlayerRankInfo(IPlayerServices player)
 	{
-		if (!_playerRankCache.TryGetValue(player.SteamID, out var rankInfo) || (DateTime.Now - rankInfo.LastUpdate) >= _cacheCleanupInterval)
+		if (_playerRankCache.TryGetValue(player.SteamID, out var rankInfo) && (DateTime.Now - rankInfo.LastUpdate) < _cacheCleanupInterval)
+			return rankInfo;
+
+		long currentPoints;
+		if (rankInfo != null && (DateTime.Now - rankInfo.LastUpdate) >= _cacheCleanupInterval)
 		{
-			long currentPoints = player.GetStorage<long>("Points");
-			var (determinedRank, nextRank) = DetermineRanks(currentPoints);
-			rankInfo = new PlayerRankInfo
-			{
-				Rank = determinedRank,
-				NextRank = nextRank,
-				Points = currentPoints,
-				LastUpdate = DateTime.Now
-			};
-			_playerRankCache[player.SteamID] = rankInfo;
+			currentPoints = rankInfo.Points;
+			player.SetStorage("Points", currentPoints);
 		}
+		else
+		{
+			currentPoints = player.GetStorage<long>("Points");
+		}
+
+		var (determinedRank, nextRank) = DetermineRanks(currentPoints);
+		rankInfo = new PlayerRankInfo
+		{
+			Rank = determinedRank,
+			NextRank = nextRank,
+			Points = currentPoints,
+			LastUpdate = DateTime.Now
+		};
+		_playerRankCache[player.SteamID] = rankInfo;
+
 		return rankInfo;
 	}
 

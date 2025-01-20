@@ -3,6 +3,7 @@ namespace Zenith
 	using System.Text.Json;
 	using CounterStrikeSharp.API;
 	using CounterStrikeSharp.API.Core;
+	using CounterStrikeSharp.API.Core.Translations;
 	using CounterStrikeSharp.API.Modules.Commands;
 	using CounterStrikeSharp.API.Modules.Menu;
 	using CounterStrikeSharp.API.Modules.Utils;
@@ -40,7 +41,7 @@ namespace Zenith
 
 		public void CreateChatMenu(Player player)
 		{
-			ChatMenu settingsMenu = new ChatMenu(Localizer["k4.settings.title"]);
+			ChatMenu settingsMenu = new ChatMenu(Localizer.ForPlayer(player.Controller, "k4.settings.title"));
 
 			foreach (var moduleItem in player.Settings)
 			{
@@ -59,7 +60,7 @@ namespace Zenith
 							bool newValue = !currentValue;
 							player.SetSetting(key, newValue, false, moduleID);
 
-							string localizedValue = Localizer[newValue ? "k4.settings.enabled" : "k4.settings.disabled"];
+							string localizedValue = Localizer.ForPlayer(player.Controller, newValue ? "k4.settings.enabled" : "k4.settings.disabled");
 							localizedValue = newValue ? $"{ChatColors.Lime}{localizedValue}" : $"{ChatColors.LightRed}{localizedValue}";
 							player.Print($"{moduleLocalizer?[$"settings.{key}"] ?? key}: {localizedValue}");
 						}
@@ -121,7 +122,7 @@ namespace Zenith
 				}
 			}
 
-			Menu?.ShowScrollableMenu(player.Controller!, Localizer["k4.settings.title"], items, (buttons, menu, selected) =>
+			Menu?.ShowScrollableMenu(player.Controller!, Localizer.ForPlayer(player.Controller, "k4.settings.title"), items, (buttons, menu, selected) =>
 			{
 				if (selected == null) return;
 
@@ -138,7 +139,7 @@ namespace Zenith
 							{
 								bool newBoolValue = selected.Data[0] == 1;
 								player.SetSetting(key, newBoolValue, false, moduleID);
-								string localizedValue = Localizer[newBoolValue ? "k4.settings.enabled" : "k4.settings.disabled"];
+								string localizedValue = Localizer.ForPlayer(player.Controller, newBoolValue ? "k4.settings.enabled" : "k4.settings.disabled");
 								localizedValue = newBoolValue ? $"{ChatColors.Lime}{localizedValue}" : $"{ChatColors.LightRed}{localizedValue}";
 								player.Print($"{moduleLocalizer?[$"settings.{key}"] ?? key}: {localizedValue}");
 							}

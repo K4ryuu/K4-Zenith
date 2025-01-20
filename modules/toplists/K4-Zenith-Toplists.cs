@@ -3,6 +3,7 @@ using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
 using CounterStrikeSharp.API.Core.Attributes;
 using CounterStrikeSharp.API.Core.Capabilities;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Commands;
 using CounterStrikeSharp.API.Modules.Menu;
 using CounterStrikeSharp.API.Modules.Timers;
@@ -23,7 +24,7 @@ public class TopListsPlugin : BasePlugin
 
 	public override string ModuleName => $"K4-Zenith | {MODULE_ID}";
 	public override string ModuleAuthor => "K4ryuu @ KitsuneLab";
-	public override string ModuleVersion => "1.0.5";
+	public override string ModuleVersion => "1.0.6";
 
 	private PluginCapability<IModuleServices>? _moduleServicesCapability;
 	private PlayerCapability<IPlayerServices>? _playerServicesCapability;
@@ -77,10 +78,10 @@ public class TopListsPlugin : BasePlugin
 			TimeTopHandler = new TimeTopHandler(this);
 			StatsTopHandler = new StatsTopHandler(this);
 
-			ModuleServices.RegisterModuleCommands(CoreAccessor.GetValue<List<string>>("Commands", "GeneralTopCommands"), Localizer["top.command.description"], OnTopCommand, CommandUsage.CLIENT_ONLY);
-			ModuleServices.RegisterModuleCommands(CoreAccessor.GetValue<List<string>>("Commands", "RankTopCommands"), Localizer["ranktop.command.description"], OnRankTopCommand, CommandUsage.CLIENT_ONLY);
-			ModuleServices.RegisterModuleCommands(CoreAccessor.GetValue<List<string>>("Commands", "TimeTopCommands"), Localizer["timetop.command.description"], OnTimeTopCommand, CommandUsage.CLIENT_ONLY);
-			ModuleServices.RegisterModuleCommands(CoreAccessor.GetValue<List<string>>("Commands", "StatsTopCommands"), Localizer["statstop.command.description"], OnStatsTopCommand, CommandUsage.CLIENT_ONLY);
+			ModuleServices.RegisterModuleCommands(CoreAccessor.GetValue<List<string>>("Commands", "GeneralTopCommands"), "Shows the toplist main menu", OnTopCommand, CommandUsage.CLIENT_ONLY);
+			ModuleServices.RegisterModuleCommands(CoreAccessor.GetValue<List<string>>("Commands", "RankTopCommands"), "Shows the top players by ranks", OnRankTopCommand, CommandUsage.CLIENT_ONLY);
+			ModuleServices.RegisterModuleCommands(CoreAccessor.GetValue<List<string>>("Commands", "TimeTopCommands"), "Show top players by playtime", OnTimeTopCommand, CommandUsage.CLIENT_ONLY);
+			ModuleServices.RegisterModuleCommands(CoreAccessor.GetValue<List<string>>("Commands", "StatsTopCommands"), "Show top players by statistics", OnStatsTopCommand, CommandUsage.CLIENT_ONLY);
 
 			AddTimer(60.0f, CacheTopPlacements, TimerFlags.REPEAT);
 
@@ -138,28 +139,24 @@ public class TopListsPlugin : BasePlugin
 				var steamIds = onlinePlayers.Select(p => p.SteamID.ToString()).ToList();
 
 				const string query = @"
-                WITH PlayerPoints AS (
-                    SELECT
-                        steam_id,
-                        CASE
-                            WHEN JSON_VALID(`K4-Zenith-Ranks.storage`) = 0 THEN 0
-                            WHEN JSON_EXTRACT(`K4-Zenith-Ranks.storage`, '$.Points') IS NULL THEN 0
-                            ELSE CAST(JSON_UNQUOTE(JSON_EXTRACT(`K4-Zenith-Ranks.storage`, '$.Points')) AS DECIMAL(10,2))
-                        END as points
-                    FROM zenith_player_storage
-                    WHERE `K4-Zenith-Ranks.storage` IS NOT NULL
-                )
-                SELECT
-                    steam_id,
-                    (SELECT COUNT(*) + 1
-                    FROM PlayerPoints pp1
-                    WHERE pp1.points > pp2.points) AS Placement
-                FROM PlayerPoints pp2
-                WHERE pp2.steam_id IN @SteamIds";
+					SELECT
+						t1.steam_id,
+						(SELECT COUNT(*) + 1
+						FROM zenith_player_storage t2
+						WHERE CAST(JSON_EXTRACT(t2.`K4-Zenith-Ranks.storage`, '$.Points') AS DECIMAL(10,2)) >
+							CAST(JSON_EXTRACT(t1.`K4-Zenith-Ranks.storage`, '$.Points') AS DECIMAL(10,2))
+						) as rank_position
+					FROM zenith_player_storage t1
+					WHERE
+						FIND_IN_SET(t1.steam_id, @SteamIds) > 0
+						AND JSON_VALID(t1.`K4-Zenith-Ranks.storage`) = 1
+						AND JSON_EXTRACT(t1.`K4-Zenith-Ranks.storage`, '$.Points') IS NOT NULL";
+
+				string steamIdString = string.Join(",", steamIds);
 
 				var results = await connection.QueryAsync<(string SteamId, long Placement)>(
 					query,
-					new { SteamIds = steamIds }
+					new { SteamIds = steamIdString }
 				);
 
 				foreach (var (SteamId, Placement) in results)
@@ -196,12 +193,12 @@ public class TopListsPlugin : BasePlugin
 	{
 		var items = new List<MenuItem>
 	{
-		new MenuItem(MenuItemType.Button, [new MenuValue(Localizer["top.menu.rank"])]),
-		new MenuItem(MenuItemType.Button, [new MenuValue(Localizer["top.menu.time"])]),
-		new MenuItem(MenuItemType.Button, [new MenuValue(Localizer["top.menu.stats"])])
+		new MenuItem(MenuItemType.Button, [new MenuValue(Localizer.ForPlayer(player, "top.menu.rank"))]),
+		new MenuItem(MenuItemType.Button, [new MenuValue(Localizer.ForPlayer(player, "top.menu.time"))]),
+		new MenuItem(MenuItemType.Button, [new MenuValue(Localizer.ForPlayer(player, "top.menu.stats"))])
 	};
 
-		menu?.ShowScrollableMenu(player, Localizer["top.menu.main.title"], items, (buttons, menu, selected) =>
+		menu?.ShowScrollableMenu(player, Localizer.ForPlayer(player, "top.menu.main.title"), items, (buttons, menu, selected) =>
 		{
 			if (selected == null) return;
 
@@ -225,19 +222,19 @@ public class TopListsPlugin : BasePlugin
 
 	private void ShowChatMainTopMenu(CCSPlayerController player)
 	{
-		var chatMenu = new ChatMenu(Localizer["top.menu.main.title"]);
+		var chatMenu = new ChatMenu(Localizer.ForPlayer(player, "top.menu.main.title"));
 
-		chatMenu.AddMenuOption(Localizer["top.menu.rank"], (p, _) =>
+		chatMenu.AddMenuOption(Localizer.ForPlayer(player, "top.menu.rank"), (p, _) =>
 		{
 			RankTopHandler?.HandleRankTopCommand(p);
 		});
 
-		chatMenu.AddMenuOption(Localizer["top.menu.time"], (p, _) =>
+		chatMenu.AddMenuOption(Localizer.ForPlayer(player, "top.menu.time"), (p, _) =>
 		{
 			TimeTopHandler?.HandleTimeTopCommand(p);
 		});
 
-		chatMenu.AddMenuOption(Localizer["top.menu.stats"], (p, _) =>
+		chatMenu.AddMenuOption(Localizer.ForPlayer(player, "top.menu.stats"), (p, _) =>
 		{
 			StatsTopHandler?.HandleStatsTopCommand(p);
 		});

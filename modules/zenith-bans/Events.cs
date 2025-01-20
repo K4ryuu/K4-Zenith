@@ -1,5 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Commands;
 
@@ -82,7 +83,7 @@ namespace Zenith_Bans
 			if (message[0] == '@')
 			{
 				var players = Utilities.GetPlayers();
-				string adminName = Localizer["k4.general.admin"];
+				string adminName = Localizer.ForPlayer(player, "k4.general.admin");
 				message = message.Replace("@", string.Empty);
 
 				foreach (var target in players)
@@ -91,11 +92,11 @@ namespace Zenith_Bans
 					{
 						if (ShouldShowActivity(player.SteamID, target, true))
 						{
-							_moduleServices?.PrintForPlayer(target, Localizer["k4.chat.announce", player.PlayerName, message], false);
+							_moduleServices?.PrintForPlayer(target, Localizer.ForPlayer(target, "k4.chat.announce", player.PlayerName, message), false);
 						}
 						else if (ShouldShowActivity(player.SteamID, target, false))
 						{
-							_moduleServices?.PrintForPlayer(target, Localizer["k4.chat.announce", adminName, message], false);
+							_moduleServices?.PrintForPlayer(target, Localizer.ForPlayer(target, "k4.chat.announce", adminName, message), false);
 						}
 					}
 				}
@@ -126,7 +127,7 @@ namespace Zenith_Bans
 				{
 					if (target != null && target.IsValid && !target.IsBot && !target.IsHLTV && (AdminManager.PlayerHasPermissions(target, "@zenith/admin") || AdminManager.PlayerHasPermissions(target, "@zenith/root")))
 					{
-						_moduleServices?.PrintForPlayer(target, Localizer["k4.chat.adminsonly", player.PlayerName, message], false);
+						_moduleServices?.PrintForPlayer(target, Localizer.ForPlayer(target, "k4.chat.adminsonly", player.PlayerName, message), false);
 					}
 				}
 				return HookResult.Handled;

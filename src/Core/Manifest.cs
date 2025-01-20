@@ -10,6 +10,6 @@ namespace Zenith
 
 		public override string ModuleAuthor => "K4ryuu @ KitsuneLab";
 
-		public override string ModuleVersion => "1.0.30";
+		public override string ModuleVersion => "1.0.31";
 	}
 }

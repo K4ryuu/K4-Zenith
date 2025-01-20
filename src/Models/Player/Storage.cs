@@ -613,10 +613,10 @@ public sealed partial class Player
 				plugin.Logger.LogWarning($"Successfully reset {(realTarget.Equals("all", StringComparison.CurrentCultureIgnoreCase) ? "all modules" : realTarget)} storage for all players. Command used by {caller?.Name ?? "CONSOLE"} ({caller?.SteamID ?? 0})");
 
 				string resetTarget = realTarget.Equals("all", StringComparison.CurrentCultureIgnoreCase)
-					? plugin.Localizer["reset.storage.all.modules"]
+					? plugin.Localizer.ForPlayer(caller?.Controller, "reset.storage.all.modules")
 					: realTarget;
 
-				caller?.Print(plugin.Localizer["reset.storage.success", resetTarget]);
+				caller?.Print(plugin.Localizer.ForPlayer(caller?.Controller, "reset.storage.success", resetTarget));
 			});
 		}
 		catch (Exception ex)

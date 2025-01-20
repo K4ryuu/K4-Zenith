@@ -1,11 +1,11 @@
 {
   "top.menu.main.title": "Toplists",
-  "top.command.description": "Shows the toplist main menu",
+
   "ranktop.invalid.count": "Invalid player count. Using default ({0}).",
   "ranktop.no.data": "No ranking data available.",
   "ranktop.player.entry.center": "#{0} {1}: <font color=\"#f5a142\">{2} points</font>",
   "ranktop.player.entry.chat": "#{0} {1}: {2} points",
-  "timetop.command.description": "Show top players by playtime",
+
   "timetop.invalid.count": "Invalid player count. Using default ({0}).",
   "timetop.category.menu.title": "Select Playtime Category",
   "timetop.category.TotalPlaytime": "Total Playtime",
@@ -15,11 +15,13 @@
   "timetop.category.AlivePlaytime": "Alive Playtime",
   "timetop.category.DeadPlaytime": "Dead Playtime",
   "timetop.no.data": "No playtime data available.",
+
   "top.menu.title": "Top {0} Players",
+
   "timetop.player.entry.center": "#{0} {1}: <font color=\"#f5a142\">{2}</font>",
   "timetop.player.entry.chat": "#{0} {1}: {2}",
   "timetop.time.format": "{0}d {1}h {2}m",
-  "statstop.command.description": "Show top players by statistics",
+
   "statstop.invalid.count": "Invalid player count. Using default ({0}).",
   "statstop.category.menu.title": "Select Statistics Category",
   "statstop.no.data": "No statistics data available.",
@@ -64,6 +66,7 @@
   "statstop.category.PenetratedKill": "Penetration Kills",
   "statstop.category.Deaths": "Deaths",
   "statstop.category.SpecialHits": "Special Hits",
+
   "top.menu.rank": "Rank Toplist",
   "top.menu.time": "Time Toplists",
   "top.menu.stats": "Statistic Toplists"

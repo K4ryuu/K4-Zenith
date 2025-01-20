@@ -1,6 +1,7 @@
 using System.Text.Json;
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Admin;
 using CounterStrikeSharp.API.Modules.Entities;
 using Dapper;
@@ -550,7 +551,7 @@ namespace Zenith_Bans
 							playerData.Punishments.RemoveAll(p => p.Type.ToString().Equals(type, StringComparison.OrdinalIgnoreCase) && p.ExpiresAt?.GetDateTime() <= DateTime.Now);
 							RemovePunishmentEffect(player, Enum.Parse<PunishmentType>(type, true));
 
-							_moduleServices?.PrintForPlayer(player, Localizer[$"k4.punishment.expired.{type.ToLower()}"]);
+							_moduleServices?.PrintForPlayer(player, Localizer.ForPlayer(player, $"k4.punishment.expired.{type.ToLower()}"));
 						}
 
 						if (notifyAdmins && type.Equals("ban", StringComparison.OrdinalIgnoreCase))
@@ -801,7 +802,7 @@ namespace Zenith_Bans
 			{
 				if (admin.IsValid && !admin.IsBot && !admin.IsHLTV && (AdminManager.PlayerHasPermissions(admin, "@zenith/admin") || AdminManager.PlayerHasPermissions(admin, "@zenith/root") || AdminManager.PlayerHasPermissions(admin, "@css/root")))
 				{
-					_moduleServices?.PrintForPlayer(admin, Localizer["k4.admin.ban_expired", playerName, steamId]);
+					_moduleServices?.PrintForPlayer(admin, Localizer.ForPlayer(admin, "k4.admin.ban_expired", playerName, steamId));
 				}
 			}
 		}

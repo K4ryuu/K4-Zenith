@@ -1,5 +1,6 @@
 using CounterStrikeSharp.API;
 using CounterStrikeSharp.API.Core;
+using CounterStrikeSharp.API.Core.Translations;
 using CounterStrikeSharp.API.Modules.Utils;
 using Microsoft.Extensions.Logging;
 using ZenithAPI;
@@ -102,7 +103,7 @@ public sealed partial class Player
 			return;
 		}
 
-		string prefix = showPrefix ? $" {_plugin.Localizer["k4.general.prefix"]}" : "";
+		string prefix = showPrefix ? $" {_plugin.Localizer.ForPlayer(Controller, "k4.general.prefix")}" : "";
 		Controller?.PrintToChat($"{prefix}{message}");
 	}
 

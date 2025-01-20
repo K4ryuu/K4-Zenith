@@ -13,6 +13,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using Microsoft.Extensions.Logging;
 using CounterStrikeSharp.API.Modules.Menu;
 using System.Reflection;
+using CounterStrikeSharp.API.Core.Translations;
 
 namespace Zenith_Stats;
 
@@ -25,7 +26,7 @@ public class Plugin : BasePlugin
 
 	public override string ModuleName => $"K4-Zenith | {MODULE_ID}";
 	public override string ModuleAuthor => "K4ryuu @ KitsuneLab";
-	public override string ModuleVersion => "1.0.6";
+	public override string ModuleVersion => "1.0.7";
 
 	public KitsuneMenu Menu { get; private set; } = null!;
 	private PlayerCapability<IPlayerServices>? _playerServicesCapability;
@@ -304,7 +305,7 @@ public class Plugin : BasePlugin
 				_playerStats.TryGetValue(player.SteamID, out var stats) &&
 				stats.SpawnMessageTimer == null)
 			{
-				_moduleServices!.PrintForPlayer(player, Localizer["k4.stats.stats_disabled", requiredPlayers]);
+				_moduleServices!.PrintForPlayer(player, Localizer.ForPlayer(player, "k4.stats.stats_disabled", requiredPlayers));
 				stats.SpawnMessageTimer = AddTimer(3.0f, () => { stats.SpawnMessageTimer = null; });
 			}
 		}
@@ -467,7 +468,7 @@ public class Plugin : BasePlugin
 
 		if (!_coreAccessor.GetValue<bool>("Config", "EnableWeaponStats"))
 		{
-			stats.ZenithPlayer.Print(Localizer["k4.stats.weapon-disabled"]);
+			stats.ZenithPlayer.Print(Localizer.ForPlayer(player, "k4.stats.weapon-disabled"));
 			return;
 		}
 
@@ -490,7 +491,7 @@ public class Plugin : BasePlugin
 
 		if (!_coreAccessor.GetValue<bool>("Config", "EnableMapStats"))
 		{
-			stats.ZenithPlayer.Print(Localizer["k4.stats.map-disabled"]);
+			stats.ZenithPlayer.Print(Localizer.ForPlayer(player, "k4.stats.map-disabled"));
 			return;
 		}
 
@@ -508,10 +509,10 @@ public class Plugin : BasePlugin
 	{
 		List<MenuItem> items =
 		[
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.accuracy"]}:</font> {CalculateAccuracy(stats.ZenithPlayer)}")),
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.kpr"]}:</font> {CalculateKPR(stats.ZenithPlayer)}")),
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.kda"]}:</font> {CalculateKDA(stats.ZenithPlayer)}")),
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.kd"]}:</font> {CalculateKD(stats.ZenithPlayer)}")),
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.accuracy")}:</font> {CalculateAccuracy(stats.ZenithPlayer)}")),
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.kpr")}:</font> {CalculateKPR(stats.ZenithPlayer)}")),
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.kda")}:</font> {CalculateKDA(stats.ZenithPlayer)}")),
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.kd")}:</font> {CalculateKD(stats.ZenithPlayer)}")),
 		];
 
 		var statNames = new[]
@@ -530,17 +531,17 @@ public class Plugin : BasePlugin
 			int value = stats.GetGlobalStat(statName);
 			if (value != 0)
 			{
-				string localizedName = Localizer[$"k4.stats.{statName.ToLower()}"];
+				string localizedName = Localizer.ForPlayer(player, $"k4.stats.{statName.ToLower()}");
 				items.Add(new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{localizedName}:</font> {value:N0}")));
 			}
 		}
 
 		if (items.Count == 4) // Only the initial 4 items
 		{
-			items.Add(new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.no_stats"]}</font>")));
+			items.Add(new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.no_stats")}</font>")));
 		}
 
-		Menu?.ShowScrollableMenu(player, Localizer["k4.stats.title"], items, (buttons, menu, selected) =>
+		Menu?.ShowScrollableMenu(player, Localizer.ForPlayer(player, "k4.stats.title"), items, (buttons, menu, selected) =>
 		{
 			// No selection handle as all items are just for display
 		}, false, _coreAccessor.GetValue<bool>("Core", "FreezeInMenu") && (GetZenithPlayer(player)?.GetSetting<bool>("FreezeInMenu", "K4-Zenith") ?? true), disableDeveloper: !_coreAccessor.GetValue<bool>("Core", "ShowDevelopers"));
@@ -548,12 +549,12 @@ public class Plugin : BasePlugin
 
 	private void ShowChatStatsMenu(CCSPlayerController player, PlayerStats stats)
 	{
-		ChatMenu statsMenu = new ChatMenu(Localizer["k4.stats.title"]);
+		ChatMenu statsMenu = new ChatMenu(Localizer.ForPlayer(player, "k4.stats.title"));
 
-		statsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.accuracy"]}{ChatColors.Default}: {CalculateAccuracy(stats.ZenithPlayer)}", (p, o) => { }, true);
-		statsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.kpr"]}{ChatColors.Default}: {CalculateKPR(stats.ZenithPlayer)}", (p, o) => { }, true);
-		statsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.kda"]}{ChatColors.Default}: {CalculateKDA(stats.ZenithPlayer)}", (p, o) => { }, true);
-		statsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.kd"]}{ChatColors.Default}: {CalculateKD(stats.ZenithPlayer)}", (p, o) => { }, true);
+		statsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.accuracy")}{ChatColors.Default}: {CalculateAccuracy(stats.ZenithPlayer)}", (p, o) => { }, true);
+		statsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.kpr")}{ChatColors.Default}: {CalculateKPR(stats.ZenithPlayer)}", (p, o) => { }, true);
+		statsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.kda")}{ChatColors.Default}: {CalculateKDA(stats.ZenithPlayer)}", (p, o) => { }, true);
+		statsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.kd")}{ChatColors.Default}: {CalculateKD(stats.ZenithPlayer)}", (p, o) => { }, true);
 
 		var statNames = new[]
 		{
@@ -571,14 +572,14 @@ public class Plugin : BasePlugin
 			int value = stats.GetGlobalStat(statName);
 			if (value != 0)
 			{
-				string localizedName = Localizer[$"k4.stats.{statName.ToLower()}"];
+				string localizedName = Localizer.ForPlayer(player, $"k4.stats.{statName.ToLower()}");
 				statsMenu.AddMenuOption($"{ChatColors.Gold}{localizedName}{ChatColors.Default}: {value:N0}", (p, o) => { }, true);
 			}
 		}
 
 		if (statsMenu.MenuOptions.Count == 4) // Only the initial 4 items
 		{
-			statsMenu.AddMenuOption($"{ChatColors.LightRed}{Localizer["k4.stats.no_stats"]}", (p, o) => { }, true);
+			statsMenu.AddMenuOption($"{ChatColors.LightRed}{Localizer.ForPlayer(player, "k4.stats.no_stats")}", (p, o) => { }, true);
 		}
 
 		MenuManager.OpenChatMenu(player, statsMenu);
@@ -604,10 +605,10 @@ public class Plugin : BasePlugin
 
 		if (items.Count == 0)
 		{
-			items.Add(new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.no_stats"]}</font>")));
+			items.Add(new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.no_stats")}</font>")));
 		}
 
-		Menu.ShowScrollableMenu(player, Localizer["k4.weaponstats.title"], items, (buttons, menu, selected) =>
+		Menu.ShowScrollableMenu(player, Localizer.ForPlayer(player, "k4.weaponstats.title"), items, (buttons, menu, selected) =>
 		{
 			if (selected == null) return;
 
@@ -623,7 +624,7 @@ public class Plugin : BasePlugin
 
 	private void ShowChatWeaponStatsMenu(CCSPlayerController player, PlayerStats stats)
 	{
-		ChatMenu weaponStatsMenu = new ChatMenu(Localizer["k4.weaponstats.title"]);
+		ChatMenu weaponStatsMenu = new ChatMenu(Localizer.ForPlayer(player, "k4.weaponstats.title"));
 
 		foreach (var weaponStat in stats.WeaponStats)
 		{
@@ -638,7 +639,7 @@ public class Plugin : BasePlugin
 
 		if (weaponStatsMenu.MenuOptions.Count == 0)
 		{
-			weaponStatsMenu.AddMenuOption($"{ChatColors.LightRed}{Localizer["k4.stats.no_stats"]}", (p, o) => { }, true);
+			weaponStatsMenu.AddMenuOption($"{ChatColors.LightRed}{Localizer.ForPlayer(player, "k4.stats.no_stats")}", (p, o) => { }, true);
 		}
 
 		MenuManager.OpenChatMenu(player, weaponStatsMenu);
@@ -648,18 +649,18 @@ public class Plugin : BasePlugin
 	{
 		List<MenuItem> items =
 		[
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.kills"]}:</font> {weaponStat.Kills:N0}")),
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.shoots"]}:</font> {weaponStat.Shots:N0}")),
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.hitsgiven"]}:</font> {weaponStat.Hits:N0}")),
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.accuracy"]}:</font> {(weaponStat.Shots > 0 ? Math.Min((float)weaponStat.Hits / weaponStat.Shots * 100, 100) : 0):F2}%")),
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.headshots"]}:</font> {weaponStat.Headshots:N0}")),
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.chesthits"]}:</font> {weaponStat.ChestHits:N0}")),
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.stomachhits"]}:</font> {weaponStat.StomachHits:N0}")),
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.leftarmhits"]}:</font> {weaponStat.LeftArmHits:N0}")),
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.rightarmhits"]}:</font> {weaponStat.RightArmHits:N0}")),
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.leftleghits"]}:</font> {weaponStat.LeftLegHits:N0}")),
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.rightleghits"]}:</font> {weaponStat.RightLegHits:N0}")),
-			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.neckhits"]}:</font> {weaponStat.NeckHits:N0}"))
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.kills")}:</font> {weaponStat.Kills:N0}")),
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.shoots")}:</font> {weaponStat.Shots:N0}")),
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.hitsgiven")}:</font> {weaponStat.Hits:N0}")),
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.accuracy")}:</font> {(weaponStat.Shots > 0 ? Math.Min((float)weaponStat.Hits / weaponStat.Shots * 100, 100) : 0):F2}%")),
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.headshots")}:</font> {weaponStat.Headshots:N0}")),
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.chesthits")}:</font> {weaponStat.ChestHits:N0}")),
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.stomachhits")}:</font> {weaponStat.StomachHits:N0}")),
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.leftarmhits")}:</font> {weaponStat.LeftArmHits:N0}")),
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.rightarmhits")}:</font> {weaponStat.RightArmHits:N0}")),
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.leftleghits")}:</font> {weaponStat.LeftLegHits:N0}")),
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.rightleghits")}:</font> {weaponStat.RightLegHits:N0}")),
+			new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.neckhits")}:</font> {weaponStat.NeckHits:N0}"))
 		];
 
 		Menu?.ShowScrollableMenu(player, weaponStat.Weapon.ToUpper(), items, (buttons, menu, selected) => { }, true, _coreAccessor.GetValue<bool>("Core", "FreezeInMenu") && (GetZenithPlayer(player)?.GetSetting<bool>("FreezeInMenu", "K4-Zenith") ?? true), disableDeveloper: !_coreAccessor.GetValue<bool>("Core", "ShowDevelopers"));
@@ -669,18 +670,18 @@ public class Plugin : BasePlugin
 	{
 		ChatMenu detailsMenu = new ChatMenu(weaponStat.Weapon.ToUpper());
 
-		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.kills"]}{ChatColors.Default}: {weaponStat.Kills:N0}", (p, o) => { }, true);
-		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.shoots"]}{ChatColors.Default}: {weaponStat.Shots:N0}", (p, o) => { }, true);
-		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.hitsgiven"]}{ChatColors.Default}: {weaponStat.Hits:N0}", (p, o) => { }, true);
-		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.accuracy"]}{ChatColors.Default}: {(weaponStat.Shots > 0 ? Math.Min((float)weaponStat.Hits / weaponStat.Shots * 100, 100) : 0):F2}%", (p, o) => { }, true);
-		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.headshots"]}{ChatColors.Default}: {weaponStat.Headshots:N0}", (p, o) => { }, true);
-		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.chesthits"]}{ChatColors.Default}: {weaponStat.ChestHits:N0}", (p, o) => { }, true);
-		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.stomachhits"]}{ChatColors.Default}: {weaponStat.StomachHits:N0}", (p, o) => { }, true);
-		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.leftarmhits"]}{ChatColors.Default}: {weaponStat.LeftArmHits:N0}", (p, o) => { }, true);
-		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.rightarmhits"]}{ChatColors.Default}: {weaponStat.RightArmHits:N0}", (p, o) => { }, true);
-		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.leftleghits"]}{ChatColors.Default}: {weaponStat.LeftLegHits:N0}", (p, o) => { }, true);
-		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.rightleghits"]}{ChatColors.Default}: {weaponStat.RightLegHits:N0}", (p, o) => { }, true);
-		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer["k4.stats.neckhits"]}{ChatColors.Default}: {weaponStat.NeckHits:N0}", (p, o) => { }, true);
+		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.kills")}{ChatColors.Default}: {weaponStat.Kills:N0}", (p, o) => { }, true);
+		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.shoots")}{ChatColors.Default}: {weaponStat.Shots:N0}", (p, o) => { }, true);
+		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.hitsgiven")}{ChatColors.Default}: {weaponStat.Hits:N0}", (p, o) => { }, true);
+		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.accuracy")}{ChatColors.Default}: {(weaponStat.Shots > 0 ? Math.Min((float)weaponStat.Hits / weaponStat.Shots * 100, 100) : 0):F2}%", (p, o) => { }, true);
+		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.headshots")}{ChatColors.Default}: {weaponStat.Headshots:N0}", (p, o) => { }, true);
+		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.chesthits")}{ChatColors.Default}: {weaponStat.ChestHits:N0}", (p, o) => { }, true);
+		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.stomachhits")}{ChatColors.Default}: {weaponStat.StomachHits:N0}", (p, o) => { }, true);
+		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.leftarmhits")}{ChatColors.Default}: {weaponStat.LeftArmHits:N0}", (p, o) => { }, true);
+		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.rightarmhits")}{ChatColors.Default}: {weaponStat.RightArmHits:N0}", (p, o) => { }, true);
+		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.leftleghits")}{ChatColors.Default}: {weaponStat.LeftLegHits:N0}", (p, o) => { }, true);
+		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.rightleghits")}{ChatColors.Default}: {weaponStat.RightLegHits:N0}", (p, o) => { }, true);
+		detailsMenu.AddMenuOption($"{ChatColors.Gold}{Localizer.ForPlayer(player, "k4.stats.neckhits")}{ChatColors.Default}: {weaponStat.NeckHits:N0}", (p, o) => { }, true);
 
 		MenuManager.OpenChatMenu(player, detailsMenu);
 	}
@@ -705,14 +706,14 @@ public class Plugin : BasePlugin
 			int value = playerStats.GetMapStat(statName);
 			if (value != 0)
 			{
-				string localizedName = Localizer[$"k4.stats.{statName.ToLower()}"];
+				string localizedName = Localizer.ForPlayer(player, $"k4.stats.{statName.ToLower()}");
 				items.Add(new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{localizedName}:</font> {value:N0}")));
 			}
 		}
 
 		if (items.Count == 0)
 		{
-			items.Add(new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer["k4.stats.no_stats"]}</font>")));
+			items.Add(new MenuItem(MenuItemType.Text, new MenuValue($"<font color='#FF6666'>{Localizer.ForPlayer(player, "k4.stats.no_stats")}</font>")));
 		}
 
 		Menu?.ShowScrollableMenu(player, playerStats.CurrentMapStats.MapName.ToUpper(), items, (buttons, menu, selected) =>
@@ -741,14 +742,14 @@ public class Plugin : BasePlugin
 			int value = playerStats.GetMapStat(statName);
 			if (value != 0)
 			{
-				string localizedName = Localizer[$"k4.stats.{statName.ToLower()}"];
+				string localizedName = Localizer.ForPlayer(player, $"k4.stats.{statName.ToLower()}");
 				mapStatsMenu.AddMenuOption($"{ChatColors.Gold}{localizedName}{ChatColors.Default}: {value:N0}", (p, o) => { }, true);
 			}
 		}
 
 		if (mapStatsMenu.MenuOptions.Count == 0)
 		{
-			mapStatsMenu.AddMenuOption($"{ChatColors.LightRed}{Localizer["k4.stats.no_stats"]}", (p, o) => { }, true);
+			mapStatsMenu.AddMenuOption($"{ChatColors.LightRed}{Localizer.ForPlayer(player, "k4.stats.no_stats")}", (p, o) => { }, true);
 		}
 
 		MenuManager.OpenChatMenu(player, mapStatsMenu);

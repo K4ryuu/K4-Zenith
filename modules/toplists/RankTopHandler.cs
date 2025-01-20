@@ -7,6 +7,7 @@ using MySqlConnector;
 using Menu;
 using Menu.Enums;
 using Microsoft.Extensions.Logging;
+using CounterStrikeSharp.API.Core.Translations;
 
 namespace Zenith_TopLists;
 
@@ -30,7 +31,7 @@ public class RankTopHandler
 			}
 			else
 			{
-				_plugin.ModuleServices?.PrintForPlayer(player, _plugin.Localizer["ranktop.invalid.count", TopListsPlugin.DEFAULT_PLAYER_COUNT]);
+				_plugin.ModuleServices?.PrintForPlayer(player, _plugin.Localizer.ForPlayer(player, "ranktop.invalid.count", TopListsPlugin.DEFAULT_PLAYER_COUNT));
 			}
 		}
 
@@ -47,7 +48,7 @@ public class RankTopHandler
 			{
 				if (topPlayers.Count == 0)
 				{
-					_plugin.ModuleServices?.PrintForPlayer(player, _plugin.Localizer["ranktop.no.data"]);
+					_plugin.ModuleServices?.PrintForPlayer(player, _plugin.Localizer.ForPlayer(player, "ranktop.no.data"));
 					return;
 				}
 
@@ -72,19 +73,19 @@ public class RankTopHandler
 
 	private void ShowCenterRankTopMenu(CCSPlayerController player, List<(string Name, int Points)> topPlayers, bool subMenu)
 	{
-		var items = topPlayers.Select((p, index) => new MenuItem(MenuItemType.Button, [new MenuValue(_plugin.Localizer["ranktop.player.entry.center", index + 1, p.Name, p.Points])])).ToList();
+		var items = topPlayers.Select((p, index) => new MenuItem(MenuItemType.Button, [new MenuValue(_plugin.Localizer.ForPlayer(player, "ranktop.player.entry.center", index + 1, p.Name, $"{p.Points:N0}"))])).ToList();
 
-		_plugin.menu?.ShowScrollableMenu(player, _plugin.Localizer["top.menu.title", topPlayers.Count], items, (_, _, _) => { }, subMenu, _plugin.CoreAccessor!.GetValue<bool>("Core", "FreezeInMenu") && (_plugin.GetZenithPlayer(player)?.GetSetting<bool>("FreezeInMenu", "K4-Zenith") ?? true), 5, disableDeveloper: !_plugin.CoreAccessor!.GetValue<bool>("Core", "ShowDevelopers"));
+		_plugin.menu?.ShowScrollableMenu(player, _plugin.Localizer.ForPlayer(player, "top.menu.title", topPlayers.Count), items, (_, _, _) => { }, subMenu, _plugin.CoreAccessor!.GetValue<bool>("Core", "FreezeInMenu") && (_plugin.GetZenithPlayer(player)?.GetSetting<bool>("FreezeInMenu", "K4-Zenith") ?? true), 5, disableDeveloper: !_plugin.CoreAccessor!.GetValue<bool>("Core", "ShowDevelopers"));
 	}
 
 	private void ShowChatRankTopMenu(CCSPlayerController player, List<(string Name, int Points)> topPlayers)
 	{
-		var chatMenu = new ChatMenu(_plugin.Localizer["top.menu.title", topPlayers.Count]);
+		var chatMenu = new ChatMenu(_plugin.Localizer.ForPlayer(player, "top.menu.title", topPlayers.Count));
 
 		for (int i = 0; i < topPlayers.Count; i++)
 		{
 			var (Name, Points) = topPlayers[i];
-			chatMenu.AddMenuOption(_plugin.Localizer["ranktop.player.entry.chat", i + 1, Name, Points], (_, _) => { });
+			chatMenu.AddMenuOption(_plugin.Localizer.ForPlayer(player, "ranktop.player.entry.chat", i + 1, Name, $"{Points:N0}"), (_, _) => { });
 		}
 
 		MenuManager.OpenChatMenu(player, chatMenu);
@@ -107,10 +108,11 @@ public class RankTopHandler
 
 			var columnName = "K4-Zenith-Ranks.storage";
 			var query = $@"
-				SELECT name,
-					   CAST(JSON_UNQUOTE(JSON_EXTRACT(@ColumnName, '$.Points')) AS UNSIGNED) AS Points
-				FROM zenith_player_storage
-				WHERE @ColumnName IS NOT NULL
+				SELECT p.name,
+					   CAST(JSON_EXTRACT(p.`{columnName}`, '$.Points') AS UNSIGNED) as Points
+				FROM zenith_player_storage p
+				WHERE JSON_VALID(p.`{columnName}`) = 1
+				AND JSON_EXTRACT(p.`{columnName}`, '$.Points') IS NOT NULL
 				ORDER BY Points DESC
 				LIMIT @Limit";
 
