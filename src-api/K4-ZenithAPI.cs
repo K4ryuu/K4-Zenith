@@ -191,6 +191,11 @@ namespace ZenithAPI
 		void PrintForPlayer(CCSPlayerController? player, string message, bool showPrefix = true);
 
 		/// <summary>
+		/// Return true if a module is enabled. False otherwise.
+		/// </summary>
+		bool IsModuleEnabled(string module);
+
+		/// <summary>
 		/// Retrieves the connection string for the database.
 		/// </summary>
 		string GetConnectionString();

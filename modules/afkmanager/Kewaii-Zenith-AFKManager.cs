@@ -139,6 +139,11 @@ public class Plugin : BasePlugin
 
 		RegisterModuleConfigs();
 
+        _moduleServices.RegisterModuleStorage(new Dictionary<string, object?>
+        {
+            { "NonAFKPlaytime", 0.0 },
+            { "AFKPlaytime", 0.0 },
+        });
 		_zenithEvents = _moduleServices.GetEventHandler();
 		if (_zenithEvents != null)
 		{
