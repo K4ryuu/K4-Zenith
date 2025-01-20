@@ -273,7 +273,6 @@ public class Plugin : BasePlugin
                 y: origin?.Y,
                 z: origin?.Z
             );
-            player.PrintToChat("test");
             
             data.SpecAfkTime = 0;
             data.SpecWarningCount = 0;
