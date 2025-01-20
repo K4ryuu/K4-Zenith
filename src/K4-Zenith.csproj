@@ -27,13 +27,13 @@
   </ItemGroup>
   <ItemGroup>
     <Reference Include="ZenithAPI">
-      <HintPath>/Users/sples/Projects/CS2_Random/Menu-main/src/bin/Release/net8.0/publish/KitsuneMenu.dll</HintPath>
+      <HintPath>$(ProjectDir)\..\src-api\bin\K4-ZenithAPI\K4-ZenithAPI.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Reference Include="KitsuneMenu">
-      <HintPath>$(ProjectDir)\..\external-dlls\KitsuneMenu.dll</HintPath>
+      <HintPath>/Users/sples/Projects/CS2_Random/Menu-main/src/bin/Release/net8.0/publish/KitsuneMenu.dll</HintPath>
       <Private>false</Private>
     </Reference>
   </ItemGroup>
