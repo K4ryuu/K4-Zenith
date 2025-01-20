@@ -334,7 +334,7 @@ public class Plugin : BasePlugin
 		double totalPlaytime = playerServices.GetStorage<double>("TotalPlaytime");
 		
 		double nonAFKPlaytime = playerServices.GetStorage<double>("NonAFKPlaytime", "Kewaii-Zenith-AFKManager");
-		double AFKPlaytime = playerServices.GetStorage<double>("AFKPlaytime", "Kewaii-Zenith-AFKManager");
+		double afkPlaytime = playerServices.GetStorage<double>("AFKPlaytime", "Kewaii-Zenith-AFKManager");
 		double terroristPlaytime = playerServices.GetStorage<double>("TerroristPlaytime");
 		double ctPlaytime = playerServices.GetStorage<double>("CounterTerroristPlaytime");
 		double spectatorPlaytime = playerServices.GetStorage<double>("SpectatorPlaytime");
@@ -350,6 +350,16 @@ public class Plugin : BasePlugin
         <font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.spectator.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(spectatorPlaytime)}</font><br>
         <font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.status.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{Localizer["timestats.center.status.value", FormatTime(alivePlaytime), FormatTime(deadPlaytime)]}</font>";
 
+			if (_moduleServices is not null && _moduleServices.IsModuleEnabled("Kewaii-Zenith-AFKManager")) {
+				htmlMessage = $@"
+        <font color='#ff3333' class='fontSize-m'>{Localizer["timestats.center.title"]}</font><br>
+        <font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.total.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(totalPlaytime)}</font><br>
+        <font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.teams.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{Localizer["timestats.center.teams.value", FormatTime(terroristPlaytime), FormatTime(ctPlaytime)]}</font><br>
+        <font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.spectator.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(spectatorPlaytime)}</font><br>
+		<font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.afk.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(afkPlaytime)}</font><br>
+		<font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.nonafk.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{FormatTime(nonAFKPlaytime)}</font><br>
+        <font color='#FF6666' class='fontSize-sm'>{Localizer["timestats.center.status.label"]}</font> <font color='#FFFFFF' class='fontSize-s'>{Localizer["timestats.center.status.value", FormatTime(alivePlaytime), FormatTime(deadPlaytime)]}</font>";
+			}
 			playerServices.PrintToCenter(htmlMessage, _coreAccessor.GetValue<int>("Core", "CenterMessageTime"), ActionPriority.Low);
 		}
 		else
@@ -359,7 +369,7 @@ public class Plugin : BasePlugin
 			playerServices.Print(Localizer["timestats.chat.teams", FormatTime(terroristPlaytime), FormatTime(ctPlaytime)]);
 			playerServices.Print(Localizer["timestats.chat.spectator", FormatTime(spectatorPlaytime)]);
 			if (_moduleServices is not null && _moduleServices.IsModuleEnabled("Kewaii-Zenith-AFKManager")) {
-				playerServices.Print(Localizer["timestats.chat.afk", FormatTime(AFKPlaytime)]);
+				playerServices.Print(Localizer["timestats.chat.afk", FormatTime(afkPlaytime)]);
 				playerServices.Print(Localizer["timestats.chat.nonafk", FormatTime(nonAFKPlaytime)]);
 			}
 			playerServices.Print(Localizer["timestats.chat.status", FormatTime(alivePlaytime), FormatTime(deadPlaytime)]);

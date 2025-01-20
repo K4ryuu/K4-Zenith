@@ -7,6 +7,8 @@
   "timestats.center.spectator.label": "Spectator:",
   "timestats.center.status.label": "Status:",
   "timestats.center.status.value": "Alive: {0} | Dead: {1}",
+  "timestats.center.afk.label": "AFK:",
+  "timestats.center.nonafk.label": "Non AFK:",
   "timestats.time.format": "{0}d {1}h {2}m",
 
   "settings.ShowPlaytime": "PlayTime Notifications",
