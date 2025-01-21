@@ -213,6 +213,9 @@ public class Plugin : BasePlugin
         data.SpecWarningCount = 0;
         data.AfkWarningCount = 0;
         
+        var zenithPlayer = GetZenithPlayer(player);
+        if (zenithPlayer != null) zenithPlayer.SetAFK(false);
+        
         return HookResult.Continue;
     }
 
@@ -228,8 +231,13 @@ public class Plugin : BasePlugin
         value.SpecAfkTime = 0;
         value.SpecWarningCount = 0;
         value.AfkWarningCount = 0;
-                
-        if(@event.Team != 1)
+
+        if (value.MovedByPlugin == false) {            
+            var zenithPlayer = GetZenithPlayer(player);
+            if (zenithPlayer != null) zenithPlayer.SetAFK(false);
+        }
+
+        if(@event.Team != 1) 
             value.MovedByPlugin = false;
         
         return HookResult.Continue;
@@ -269,6 +277,10 @@ public class Plugin : BasePlugin
             data.MovedByPlugin = false;
             data.AntiCampWarningCount = 0;
             data.AntiCampTime = 0;
+            
+            var zenithPlayer = GetZenithPlayer(player);
+            if (zenithPlayer != null) zenithPlayer.SetAFK(false);
+            
         }, TimerFlags.STOP_ON_MAPCHANGE);
             
         return HookResult.Continue;
